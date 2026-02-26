@@ -1,6 +1,11 @@
 const axios = require('axios');
 
-const ALPHA_VANTAGE_URL = 'https://www.alphavantage.co/query';
+const TWELVE_DATA_URL = 'https://api.twelvedata.com';
+
+// In-memory cache
+const quoteCache = new Map();
+const historyCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // @desc    Get stock quote
 // @route   GET /api/stocks/quote/:symbol
@@ -10,25 +15,44 @@ const getStockQuote = async (req, res) => {
         const symbol = req.params.symbol.toUpperCase();
         const apiKey = process.env.STOCK_API_KEY;
 
-        const response = await axios.get(`${ALPHA_VANTAGE_URL}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`);
+        const cached = quoteCache.get(symbol);
+        if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+            console.log(`Serving quote for ${symbol} from cache`);
+            return res.json(cached.data);
+        }
 
-        if (response.data && response.data['Global Quote'] && Object.keys(response.data['Global Quote']).length > 0) {
-            const quote = response.data['Global Quote'];
+        const response = await axios.get(`${TWELVE_DATA_URL}/quote?symbol=${symbol}&apikey=${apiKey}`);
 
-            res.json({
+        if (response.data && response.data.symbol) {
+            const quote = response.data;
+
+            const quoteData = {
                 symbol,
-                currentPrice: parseFloat(quote['05. price']),
-                high: parseFloat(quote['03. high']),
-                low: parseFloat(quote['04. low']),
-                previousClose: parseFloat(quote['08. previous close']),
-                percentageChange: parseFloat(quote['10. change percent'].replace('%', '')),
-                change: parseFloat(quote['09. change']),
-            });
+                currentPrice: parseFloat(quote.close),
+                high: parseFloat(quote.high),
+                low: parseFloat(quote.low),
+                previousClose: parseFloat(quote.previous_close),
+                percentageChange: parseFloat(quote.percent_change),
+                change: parseFloat(quote.change),
+            };
+
+            quoteCache.set(symbol, { data: quoteData, timestamp: Date.now() });
+            res.json(quoteData);
         } else {
-            res.status(404).json({ message: 'Stock not found or invalid API key / Rate limit reached' });
+            // Check if it's a rate limit error from Twelve Data (code 429)
+            if (response.data && response.data.code === 429 && cached) {
+                console.log(`Rate limit reached, serving stale cached quote for ${symbol}`);
+                return res.json(cached.data);
+            }
+            res.status(429).json({ message: response.data.message || 'Stock not found or API rate limit reached' });
         }
     } catch (error) {
-        console.error(error);
+        console.error("Quote API Error:", error.message);
+        const symbol = req.params.symbol.toUpperCase();
+        const cached = quoteCache.get(symbol);
+        if (cached) {
+            return res.json(cached.data);
+        }
         res.status(500).json({ message: 'Error fetching stock quote' });
     }
 };
@@ -41,30 +65,42 @@ const getStockHistory = async (req, res) => {
         const symbol = req.params.symbol.toUpperCase();
         const apiKey = process.env.STOCK_API_KEY;
 
+        const cached = historyCache.get(symbol);
+        if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+            console.log(`Serving history for ${symbol} from cache`);
+            return res.json(cached.data);
+        }
+
         const response = await axios.get(
-            `${ALPHA_VANTAGE_URL}?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=compact&apikey=${apiKey}`
+            `${TWELVE_DATA_URL}/time_series?symbol=${symbol}&interval=1day&outputsize=30&apikey=${apiKey}`
         );
 
-        if (response.data && response.data['Time Series (Daily)']) {
-            const timeSeries = response.data['Time Series (Daily)'];
-            // Alpha Vantage returns a dict keyed by date ("YYYY-MM-DD"). We need to map this to an array.
+        if (response.data && response.data.values) {
+            const timeSeries = response.data.values;
 
-            const historicalData = Object.keys(timeSeries)
-                .slice(0, 30) // Get the last 30 trading days
-                .map((dateStr) => {
-                    return {
-                        date: new Date(dateStr).toLocaleDateString(),
-                        price: parseFloat(timeSeries[dateStr]['4. close']),
-                    };
-                })
-                .reverse(); // Standardize chronological order for chart
+            const historicalData = timeSeries.map((item) => {
+                return {
+                    date: new Date(item.datetime).toLocaleDateString(),
+                    price: parseFloat(item.close),
+                };
+            }).reverse();
 
+            historyCache.set(symbol, { data: historicalData, timestamp: Date.now() });
             res.json(historicalData);
         } else {
-            res.status(404).json({ message: 'No historical data found or API rate limit reached' });
+            if (response.data && response.data.code === 429 && cached) {
+                console.log(`Rate limit reached, serving stale cached history for ${symbol}`);
+                return res.json(cached.data);
+            }
+            res.status(429).json({ message: response.data.message || 'No historical data found or API rate limit reached' });
         }
     } catch (error) {
-        console.error(error);
+        console.error("History API Error:", error.message);
+        const symbol = req.params.symbol.toUpperCase();
+        const cached = historyCache.get(symbol);
+        if (cached) {
+            return res.json(cached.data);
+        }
         res.status(500).json({ message: 'Error fetching stock history' });
     }
 };
