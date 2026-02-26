@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  background-color: #f9fafb;
+  color: #111827;
+  transition-property: color, background-color, border-color, text-decoration-color, flex, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+.dark body {
+  background-color: #111827;
+  color: #f3f4f6;
+}
