@@ -1,11 +1,12 @@
 import React from 'react';
 import SignupForm from '../components/auth/SignupForm';
+import AuthLayout from '../components/common/AuthLayout';
 
 const SignupPage = () => {
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <AuthLayout>
             <SignupForm />
-        </div>
+        </AuthLayout>
     );
 };
 

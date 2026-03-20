@@ -29,31 +29,31 @@ const StockCard = ({ stockData, isWatchlisted, onWatchlistChange }) => {
 
     if (stockData.error) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-orange-200 dark:border-orange-800 hover:shadow-md transition-all">
+            <div className="bg-orange-50/80 dark:bg-orange-900/40 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-orange-200 dark:border-orange-800 relative z-10 transition-all">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
                             {symbol}
                         </h3>
                         <p className="text-sm font-semibold text-orange-600 dark:text-orange-400 mt-1">API Rate Limit Hit</p>
                     </div>
                     <button
                         onClick={handleWatchlistToggle}
-                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-indigo-500 transition-colors z-10"
+                        className="p-2 rounded-full hover:bg-white/50 dark:hover:bg-slate-700/50 text-slate-400 hover:text-indigo-500 transition-colors z-10 backdrop-blur-md"
                         title={isWatchlisted ? "Remove from Watchlist" : "Add to Watchlist"}
                     >
                         {isWatchlisted ? (
-                            <BookmarkMinus className="h-6 w-6 text-indigo-500" />
+                            <BookmarkMinus className="h-6 w-6 text-indigo-500 drop-shadow-sm" />
                         ) : (
-                            <BookmarkPlus className="h-6 w-6" />
+                            <BookmarkPlus className="h-6 w-6 relative z-10" />
                         )}
                     </button>
                 </div>
-                <div className="mt-6 p-4 rounded-xl bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-900/50">
+                <div className="mt-6 p-4 rounded-xl bg-orange-100/50 dark:bg-orange-900/50 border border-orange-200/50 dark:border-orange-800/50">
                     <p className="text-sm text-orange-800 dark:text-orange-300 font-medium">
                         Alpha Vantage restricts data fetches to 5/minute.
                     </p>
-                    <p className="text-sm text-orange-700 dark:text-orange-400 mt-1">
+                    <p className="text-sm text-orange-700 dark:text-orange-400 mt-1 font-semibold">
                         Please wait 60 seconds for data to load.
                     </p>
                 </div>
@@ -62,22 +62,22 @@ const StockCard = ({ stockData, isWatchlisted, onWatchlistChange }) => {
     }
 
     return (
-        <Link to={`/stock/${symbol}`} className="block block group">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 transition-all duration-300">
+        <Link to={`/stock/${symbol}`} className="block group h-full">
+            <div className="h-full bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-2xl p-6 border border-white/40 dark:border-slate-700/50 transition-all duration-300 relative z-10">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors tracking-tight">
                             {symbol}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Current Price</p>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Current Price</p>
                     </div>
                     <button
                         onClick={handleWatchlistToggle}
-                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-indigo-500 transition-colors z-10"
+                        className="p-2 rounded-full hover:bg-white/50 dark:hover:bg-slate-700/50 text-slate-400 hover:text-indigo-500 transition-colors z-10 backdrop-blur-md"
                         title={isWatchlisted ? "Remove from Watchlist" : "Add to Watchlist"}
                     >
                         {isWatchlisted ? (
-                            <BookmarkMinus className="h-6 w-6 text-indigo-500" />
+                            <BookmarkMinus className="h-6 w-6 text-indigo-500 drop-shadow-sm" />
                         ) : (
                             <BookmarkPlus className="h-6 w-6" />
                         )}
@@ -85,28 +85,28 @@ const StockCard = ({ stockData, isWatchlisted, onWatchlistChange }) => {
                 </div>
 
                 <div className="flex items-end gap-3 mb-6">
-                    <span className="text-4xl font-extrabold text-gray-900 dark:text-white">
+                    <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
                         ${currentPrice?.toFixed(2)}
                     </span>
-                    <div className={`flex items-center gap-1 font-medium ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    <div className={`flex items-center gap-1 font-bold ${isPositive ? 'text-emerald-500 drop-shadow-sm' : 'text-rose-500 drop-shadow-sm'}`}>
                         {isPositive ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
                         <span className="text-lg">{Math.abs(change)?.toFixed(2)}</span>
-                        <span className="text-sm">({percentageChange?.toFixed(2)}%)</span>
+                        <span className="text-sm bg-white/50 dark:bg-slate-900/50 px-1.5 py-0.5 rounded-md ml-1">({percentageChange?.toFixed(2)}%)</span>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+                <div className="grid grid-cols-3 gap-4 border-t border-slate-200/50 dark:border-slate-700/50 pt-5 mt-2">
                     <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">High</p>
-                        <p className="font-semibold text-gray-900 dark:text-white mt-1">${high?.toFixed(2)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">High</p>
+                        <p className="font-bold text-slate-900 dark:text-white mt-1.5">${high?.toFixed(2)}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Low</p>
-                        <p className="font-semibold text-gray-900 dark:text-white mt-1">${low?.toFixed(2)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">Low</p>
+                        <p className="font-bold text-slate-900 dark:text-white mt-1.5">${low?.toFixed(2)}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Prev Close</p>
-                        <p className="font-semibold text-gray-900 dark:text-white mt-1">${previousClose?.toFixed(2)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">Prev Close</p>
+                        <p className="font-bold text-slate-900 dark:text-white mt-1.5">${previousClose?.toFixed(2)}</p>
                     </div>
                 </div>
             </div>

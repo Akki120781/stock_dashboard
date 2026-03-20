@@ -1,16 +1,49 @@
 @import "tailwindcss";
+@config "../tailwind.config.js";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-body {
-  background-color: #f9fafb;
-  color: #111827;
-  transition-property: color, background-color, border-color, text-decoration-color, flex, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+@layer base {
+  body {
+    background-color: #fafafa;
+    color: #0f172a;
+    transition-property: color, background-color, border-color, text-decoration-color, flex, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+  
+  .dark body {
+    background-color: #000000;
+    color: #ededed;
+  }
 }
 
-.dark body {
-  background-color: #111827;
-  color: #f3f4f6;
+@layer utilities {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark .glass-panel {
+    background: rgba(20, 20, 20, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
 }
