@@ -99,7 +99,7 @@ export default function Navbar() {
     <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6">
       <div
         className={cn(
-          "mx-auto flex h-16 max-w-7xl items-center justify-between rounded-lg px-3 transition duration-300 sm:px-5",
+          "flex h-16 max-w-none w-full items-center justify-between rounded-lg px-3 transition duration-300 sm:px-5",
           scrolled
             ? "glass-surface bg-slate-950/62"
             : "border border-white/8 bg-white/[0.035] backdrop-blur-sm",

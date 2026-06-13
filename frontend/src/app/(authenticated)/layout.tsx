@@ -22,7 +22,7 @@ export default function AuthenticatedLayout({
 
         <Navbar />
         
-        <main className="relative pt-20 pb-4 px-3 sm:px-4 lg:px-6 z-10 max-w-7xl mx-auto w-full">
+        <main className="relative pt-20 pb-2 px-4 sm:px-6 lg:px-8 z-10 max-w-none w-full">
           {children}
         </main>
       </div>
