@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Mail, Activity, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Activity, Loader2, X } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { BullLogo } from "./bull-logo";
+import { cn } from "@/lib/utils";
 
 // --- Pupil Component ---
 const Pupil = ({ 
@@ -155,8 +156,13 @@ const EyeBall = ({
 };
 
 // --- Main AnimatedCharactersAuth Component ---
-export default function AnimatedCharactersAuth({ mode = 'login' }) {
+export default function AnimatedCharactersAuth({ mode: initialMode = 'login', isModal = false, onClose = () => {} }) {
+  const [mode, setMode] = useState(initialMode);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -305,7 +311,12 @@ export default function AnimatedCharactersAuth({ mode = 'login' }) {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-[#020617] text-white">
+    <div className={cn(
+      "grid bg-[#020617] text-white relative w-full",
+      isModal 
+        ? "min-h-[500px] md:min-h-[600px] lg:grid-cols-2 overflow-hidden rounded-2xl" 
+        : "min-h-screen lg:grid-cols-2"
+    )}>
       
       {/* Left Content Section - Cartoon Characters */}
       <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-[#121829] via-[#090d16] to-[#020617] p-12 text-white border-r border-slate-800/60 overflow-hidden">
@@ -500,7 +511,20 @@ export default function AnimatedCharactersAuth({ mode = 'login' }) {
       </div>
 
       {/* Right Content Section - Form */}
-      <div className="flex items-center justify-center p-8 bg-[#020617] border-slate-900">
+      <div className={cn(
+        "flex items-center justify-center p-8 bg-[#020617] border-slate-900 relative",
+        isModal && "bg-[#090d16] md:bg-[#070b13]/96"
+      )}>
+        {isModal && onClose && (
+          <button
+            aria-label="Close authentication modal"
+            onClick={onClose}
+            className="absolute right-4 top-4 inline-flex size-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white z-50 cursor-pointer"
+            type="button"
+          >
+            <X className="size-4" />
+          </button>
+        )}
         <div className="w-full max-w-[420px] animate-fade-in">
           
           {/* Mobile Logo */}
@@ -645,16 +669,36 @@ export default function AnimatedCharactersAuth({ mode = 'login' }) {
             {mode === 'login' ? (
               <>
                 Don't have an account?{" "}
-                <Link href="/signup" className="text-indigo-400 font-semibold hover:underline">
-                  Sign Up
-                </Link>
+                {isModal ? (
+                  <button 
+                    onClick={() => setMode('signup')}
+                    type="button"
+                    className="text-indigo-400 font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
+                  >
+                    Sign Up
+                  </button>
+                ) : (
+                  <Link href="/signup" className="text-indigo-400 font-semibold hover:underline">
+                    Sign Up
+                  </Link>
+                )}
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <Link href="/login" className="text-indigo-400 font-semibold hover:underline">
-                  Log in
-                </Link>
+                {isModal ? (
+                  <button 
+                    onClick={() => setMode('login')}
+                    type="button"
+                    className="text-indigo-400 font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
+                  >
+                    Log in
+                  </button>
+                ) : (
+                  <Link href="/login" className="text-indigo-400 font-semibold hover:underline">
+                    Log in
+                  </Link>
+                )}
               </>
             )}
           </div>

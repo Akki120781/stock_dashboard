@@ -62,7 +62,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import HoverGradientNavBar from "@/components/ui/hover-gradient-nav-bar";
-import { Component as LoginPageComponent } from "@/components/ui/animated-characters-login-page";
+import AnimatedCharactersAuth from "@/components/ui/animated-characters-auth";
 import FlowArt, { FlowSection } from "@/components/ui/story-scroll";
 import { BullLogo } from "@/components/ui/bull-logo";
 import { BrandScroller } from "@/components/ui/brand-scoller";
@@ -318,14 +318,16 @@ function GitHubIcon() {
 }
 
 function AuthModal({
-  open,
+  isOpen,
+  initialMode = "login",
   onClose,
 }: {
-  open: boolean;
+  isOpen: boolean;
+  initialMode: "login" | "signup";
   onClose: () => void;
 }) {
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
     document.body.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -336,11 +338,11 @@ function AuthModal({
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
-  }, [open, onClose]);
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
-      {open ? (
+      {isOpen ? (
         <motion.div
           className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4 backdrop-blur-md"
           initial={{ opacity: 0 }}
@@ -356,7 +358,7 @@ function AuthModal({
             transition={{ duration: 0.24, ease: "easeOut" }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <LoginPageComponent isModal={true} onClose={onClose} />
+            <AnimatedCharactersAuth isModal={true} mode={initialMode} onClose={onClose} />
           </motion.div>
         </motion.div>
       ) : null}
@@ -364,7 +366,7 @@ function AuthModal({
   );
 }
 
-function Navbar({ onAuth }: { onAuth: () => void }) {
+function Navbar({ onAuth }: { onAuth: (mode: "login" | "signup") => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -496,10 +498,10 @@ function Navbar({ onAuth }: { onAuth: () => void }) {
         </ul>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost" onClick={onAuth}>
+          <Button variant="ghost" onClick={() => onAuth("login")}>
             Login
           </Button>
-          <Button onClick={onAuth}>
+          <Button onClick={() => onAuth("signup")}>
             Get Started
             <ArrowRight />
           </Button>
@@ -538,10 +540,10 @@ function Navbar({ onAuth }: { onAuth: () => void }) {
               ))}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <Button variant="secondary" onClick={onAuth}>
+              <Button variant="secondary" onClick={() => onAuth("login")}>
                 Login
               </Button>
-              <Button onClick={onAuth}>Get Started</Button>
+              <Button onClick={() => onAuth("signup")}>Get Started</Button>
             </div>
           </motion.div>
         ) : null}
@@ -657,7 +659,7 @@ function HeroSky() {
   );
 }
 
-function Hero({ onAuth }: { onAuth: () => void }) {
+function Hero({ onAuth }: { onAuth: (mode: "login" | "signup") => void }) {
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden pb-8 pt-24 lg:pt-28">
       <HeroSky />
@@ -692,7 +694,7 @@ function Hero({ onAuth }: { onAuth: () => void }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Button size="lg" onClick={onAuth}>
+          <Button size="lg" onClick={() => onAuth("signup")}>
             Get Started
             <ArrowRight />
           </Button>
@@ -1412,7 +1414,7 @@ function Testimonials() {
   );
 }
 
-function Pricing({ onAuth }: { onAuth: () => void }) {
+function Pricing({ onAuth }: { onAuth: (mode: "login" | "signup") => void }) {
   return (
     <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -1455,7 +1457,7 @@ function Pricing({ onAuth }: { onAuth: () => void }) {
                 <Button
                   className="mt-8 w-full"
                   variant={plan.highlighted ? "default" : "secondary"}
-                  onClick={onAuth}
+                  onClick={() => onAuth("signup")}
                 >
                   {plan.highlighted ? "Start Pro" : "Get Started"}
                 </Button>
@@ -1521,16 +1523,22 @@ function FAQ() {
 
 export default function PremiumLandingPage() {
   const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+
+  const handleAuth = (mode: "login" | "signup") => {
+    setAuthMode(mode);
+    setAuthOpen(true);
+  };
 
   return (
     <main className="relative min-h-screen bg-[#050812] text-white isolate">
       {/* Scrollable content wrapper */}
       <div className="relative z-10 bg-[#050812] overflow-x-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] pb-12">
-        <Navbar onAuth={() => setAuthOpen(true)} />
+        <Navbar onAuth={handleAuth} />
         
         <FlowArt aria-label="BullTrade Presentation">
           <FlowSection aria-label="Hero">
-            <Hero onAuth={() => setAuthOpen(true)} />
+            <Hero onAuth={handleAuth} />
           </FlowSection>
           
           <FlowSection aria-label="Markets">
@@ -1554,7 +1562,7 @@ export default function PremiumLandingPage() {
           </FlowSection>
           
           <FlowSection aria-label="Pricing">
-            <Pricing onAuth={() => setAuthOpen(true)} />
+            <Pricing onAuth={handleAuth} />
           </FlowSection>
         </FlowArt>
 
@@ -1566,7 +1574,7 @@ export default function PremiumLandingPage() {
         <FooterTapedComponent />
       </div>
 
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <AuthModal isOpen={authOpen} initialMode={authMode} onClose={() => setAuthOpen(false)} />
     </main>
   );
 }
