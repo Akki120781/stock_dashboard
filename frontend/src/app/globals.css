@@ -80,6 +80,50 @@ a {
     -webkit-backdrop-filter: blur(22px);
   }
 
+  .premium-dashboard-card,
+  .premium-dashboard-hero {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .premium-dashboard-card::before,
+  .premium-dashboard-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+      linear-gradient(120deg, transparent 0%, rgba(103, 232, 249, 0.14) 38%, transparent 58%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 38%, rgba(253, 230, 138, 0.06));
+    opacity: 0.42;
+    transform: translateX(-18%);
+    transition: opacity 220ms ease, transform 520ms ease;
+  }
+
+  .premium-dashboard-card::after,
+  .premium-dashboard-hero::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(103, 232, 249, 0.055), transparent 42%);
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+
+  .premium-dashboard-card:hover::before,
+  .premium-dashboard-hero:hover::before {
+    opacity: 0.72;
+    transform: translateX(0);
+  }
+
+  .premium-dashboard-card:hover::after,
+  .premium-dashboard-hero:hover::after {
+    opacity: 1;
+  }
+
   .fine-grid {
     background-image:
       linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),

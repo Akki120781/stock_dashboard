@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthContext } from '../../context/AuthContext';
@@ -12,13 +12,11 @@ import {
   Bookmark, 
   Clock3, 
   Menu, 
+  TrendingUp,
   X 
 } from 'lucide-react';
-import { BullLogo } from '../ui/bull-logo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-
-const MotionLink = motion(Link);
 
 export default function Navbar() {
   const { user, logout, watchlistCount } = useContext(AuthContext);
@@ -64,141 +62,75 @@ export default function Navbar() {
     }] : [])
   ];
 
-  const itemVariants = {
-    initial: { rotateX: 0, opacity: 1 },
-    hover: { rotateX: -90, opacity: 0 },
-  };
-
-  const backVariants = {
-    initial: { rotateX: 90, opacity: 0 },
-    hover: { rotateX: 0, opacity: 1 },
-  };
-
-  const glowVariants = {
-    initial: { opacity: 0, scale: 0.8 },
-    hover: {
-      opacity: 1,
-      scale: 1.8,
-      transition: {
-        opacity: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-        scale: { duration: 0.4, type: "spring", stiffness: 300, damping: 25 },
-      },
-    },
-  };
-
-  const sharedTransition = {
-    type: "spring",
-    stiffness: 100,
-    damping: 20,
-    duration: 0.4,
-  };
-
   return (
     <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6">
       <div
         className={cn(
-          "flex h-14 max-w-none w-full items-center justify-between rounded-lg px-3 transition duration-300 sm:px-4",
+          "mx-auto grid h-16 w-full max-w-7xl grid-cols-[1fr_auto_1fr] items-center rounded-lg px-3 transition duration-300 sm:px-5",
           scrolled
-            ? "glass-surface bg-slate-950/62"
-            : "border border-white/8 bg-white/[0.035] backdrop-blur-sm",
+            ? "glass-surface bg-slate-950/64"
+            : "border border-white/10 bg-white/[0.045] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl",
         )}
       >
-        {/* Brand Logo - compact layout */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-left"
+          className="flex items-center gap-3 text-left"
         >
-          <span className="flex size-8.5 items-center justify-center rounded-lg border border-red-500/20 bg-red-950/40 text-red-500">
-            <BullLogo className="size-4.5" />
+          <span className="flex size-10 items-center justify-center rounded-lg border border-cyan-200/20 bg-cyan-200/10 text-cyan-200 shadow-[0_0_30px_rgba(103,232,249,0.12)]">
+            <TrendingUp className="size-5" />
           </span>
-          <span className="text-sm font-semibold tracking-tight text-white">BullTrade</span>
+          <span className="text-base font-semibold tracking-tight text-white">BullTrade</span>
         </Link>
 
-        {/* 3D Nav Items with small spacing and text-xs */}
-        <ul className="hidden items-center gap-1 lg:flex relative z-10">
+        <ul className="relative z-10 hidden items-center justify-center gap-1 rounded-lg border border-white/10 bg-slate-950/30 p-1 backdrop-blur-xl lg:flex">
           {menuItems.map((item) => (
-            <motion.li key={item.label} className="relative" initial="initial" whileHover="hover">
-              <motion.div
-                className="block rounded-lg overflow-visible group relative"
-                style={{ perspective: "600px" }}
-                whileHover="hover"
-                initial="initial"
-              >
-                {/* Glow Background */}
-                <motion.div
-                  className="absolute inset-0 z-0 pointer-events-none rounded-lg"
-                  variants={glowVariants}
-                  style={{
-                    background: item.gradient,
-                    opacity: 0,
-                  }}
+            <motion.li key={item.label} className="relative">
+              {pathname === item.href && (
+                <motion.span
+                  layoutId="authenticated-nav-active"
+                  className="absolute inset-0 rounded-lg border border-cyan-200/20 bg-cyan-200/10 shadow-[0_0_30px_rgba(103,232,249,0.12)]"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
-                
-                {/* Front */}
-                <MotionLink
-                  href={item.href}
-                  className="flex items-center gap-1.5 px-3 py-1.5 relative z-10 bg-transparent text-slate-300 group-hover:text-white transition-colors rounded-lg text-[11px] font-medium cursor-pointer"
-                  variants={itemVariants}
-                  transition={sharedTransition}
-                  style={{
-                    transformStyle: "preserve-3d",
-                    transformOrigin: "center bottom"
-                  }}
-                >
-                  <span className={cn("transition-colors duration-300", item.iconColor)}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </MotionLink>
-
-                {/* Back */}
-                <MotionLink
-                  href={item.href}
-                  className="flex items-center gap-1.5 px-3 py-1.5 absolute inset-0 z-10 bg-transparent text-slate-300 group-hover:text-white transition-colors rounded-lg text-[11px] font-medium cursor-pointer"
-                  variants={backVariants}
-                  transition={sharedTransition}
-                  style={{
-                    transformStyle: "preserve-3d",
-                    transformOrigin: "center top",
-                    transform: "rotateX(90deg)"
-                  }}
-                >
-                  <span className={cn("transition-colors duration-300", item.iconColor)}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </MotionLink>
-              </motion.div>
+              )}
+              <Link
+                href={item.href}
+                className={cn(
+                  "relative z-10 flex w-32 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition",
+                  pathname === item.href
+                    ? "text-cyan-100"
+                    : "text-slate-400 hover:bg-white/6 hover:text-white",
+                )}
+              >
+                <span className={cn("transition-colors duration-300", item.iconColor)}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </Link>
             </motion.li>
           ))}
         </ul>
 
-        {/* Right Side Controls - compact spacing */}
-        <div className="hidden items-center gap-3 md:flex">
-          
-          {/* User Watchlist count badge */}
+        <div className="hidden items-center justify-end gap-2 md:flex">
           {user && (
-            <div className="flex items-center gap-1 font-semibold text-slate-400 text-[10px]">
-              <Bookmark className="size-3.5 text-cyan-400" />
+            <div className="flex h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.045] px-3 text-xs font-semibold text-slate-300">
+              <Bookmark className="size-4 text-cyan-300" />
               <span>Watchlist ({watchlistCount})</span>
             </div>
           )}
 
-          {/* User Username display */}
           {user && (
-            <span className="flex items-center gap-1 font-medium bg-slate-900/60 border border-white/10 px-2.5 py-1 rounded-lg text-slate-200 text-[10px]">
-              <UserIcon className="size-3 text-cyan-400" />
+            <span className="flex h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.045] px-3 text-xs font-semibold text-slate-200">
+              <UserIcon className="size-4 text-cyan-300" />
               <span>{user.username}</span>
             </span>
           )}
 
-          {/* Logout Trigger */}
           {user ? (
             <button
               onClick={handleLogout}
-              className="bg-red-950/40 border border-red-500/20 text-red-500 hover:bg-red-900/30 px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shadow-md shadow-red-500/5 hover:scale-[1.02] active:scale-[0.98]"
+              className="flex h-10 items-center gap-2 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 text-xs font-bold text-rose-200 shadow-md shadow-rose-500/5 transition hover:bg-rose-300/16"
             >
-              <LogOut className="size-3" />
+              <LogOut className="size-4" />
               <span>Logout</span>
             </button>
           ) : (
@@ -222,7 +154,7 @@ export default function Navbar() {
         {/* Mobile menu trigger */}
         <button
           aria-label="Open navigation"
-          className="inline-flex size-8.5 items-center justify-center rounded-lg border border-white/10 bg-white/8 text-white lg:hidden"
+          className="justify-self-end inline-flex size-10 items-center justify-center rounded-lg border border-white/10 bg-white/8 text-white lg:hidden"
           onClick={() => setOpen((value) => !value)}
           type="button"
         >
@@ -234,7 +166,7 @@ export default function Navbar() {
       <AnimatePresence>
         {open ? (
           <motion.div
-            className="glass-surface mx-auto mt-2 max-w-7xl rounded-lg p-2.5 lg:hidden"
+            className="glass-surface mx-auto mt-2 max-w-7xl rounded-lg p-3 lg:hidden"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -245,7 +177,10 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-200 hover:bg-white/8 flex items-center gap-1.5"
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-3 text-left text-sm font-semibold hover:bg-white/8",
+                    pathname === item.href ? "bg-cyan-200/10 text-cyan-100" : "text-slate-200",
+                  )}
                   onClick={() => setOpen(false)}
                 >
                   {item.icon}

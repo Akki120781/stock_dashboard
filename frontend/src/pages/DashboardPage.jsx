@@ -1,924 +1,686 @@
 "use client";
 
-import React, { useState, useEffect, useContext } from 'react';
-import Link from 'next/link';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Search, 
-  Loader2, 
-  Sparkles, 
-  Pin, 
-  EyeOff, 
-  RotateCcw, 
-  Save, 
-  Award, 
-  Bookmark, 
-  Activity, 
-  Newspaper, 
-  BarChart3, 
-  Layers, 
-  Cpu, 
-  Zap, 
-  Compass, 
-  BookmarkMinus, 
-  BookmarkPlus,
-  Play,
-  Check
-} from 'lucide-react';
-import api from '../services/api';
-import StockCard from '../components/stock/StockCard';
-import { AuthContext } from '../context/AuthContext';
+/* eslint-disable react/prop-types */
 
-// Default widgets layout configuration prioritized and perfectly grid balanced
-const DEFAULT_WIDGETS = [
-  { id: 'market-overview', title: 'Market Indices', w: 'lg:col-span-2', isPinned: false, isHidden: false },
-  { id: 'ai-insights', title: 'AI Analyst Intelligence', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'portfolio-pnl', title: 'Portfolio P&L Overview', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'watchlist-feed', title: 'Watchlist Stream', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'top-movers', title: 'Top Market Movers', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'news-timeline', title: 'Live Briefings & News', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'market-heatmap', title: 'Sector Heatmap & Flow', w: 'lg:col-span-2', isPinned: false, isHidden: false },
-  { id: 'fear-greed', title: 'Fear & Greed Index', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'economic-calendar', title: 'Economic Calendar', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'earnings-calendar', title: 'Earnings Calendar', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'options-activity', title: 'Options Flow & Activity', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'insider-trading', title: 'Insider Transactions', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'high-low-tracker', title: '52W High/Low Tracker', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'discovery-hub', title: 'Discovery Signals', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'investor-activity', title: 'Investor Feed Alerts', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'technical-signals', title: 'Technical Signals', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'achievements-card', title: 'Investor Insights & Streaks', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'recent-transactions', title: 'Recent Simulated Transactions', w: 'lg:col-span-2', isPinned: false, isHidden: false }
+import { useContext, useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Activity,
+  AlertCircle,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  BarChart3,
+  BellRing,
+  Brain,
+  CalendarClock,
+  CheckCircle2,
+  Clock3,
+  Gauge,
+  Layers,
+  LineChart,
+  Loader2,
+  PieChart,
+  Search,
+  ShieldCheck,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+  Zap,
+} from "lucide-react";
+
+import StockCard from "../components/stock/StockCard";
+import { AuthContext } from "../context/AuthContext";
+import api from "../services/api";
+import { cn } from "@/lib/utils";
+
+const indices = [
+  { name: "S&P 500", value: "6,248.32", change: "+0.84%", up: true },
+  { name: "NASDAQ", value: "20,186.71", change: "+1.12%", up: true },
+  { name: "Dow Jones", value: "44,942.18", change: "+0.45%", up: true },
+  { name: "Russell 2000", value: "2,214.50", change: "-0.18%", up: false },
 ];
+
+const movers = [
+  { symbol: "NVDA", name: "NVIDIA", price: "$151.90", change: "+6.42%", up: true },
+  { symbol: "AMD", name: "Advanced Micro", price: "$158.42", change: "+4.81%", up: true },
+  { symbol: "TSLA", name: "Tesla", price: "$198.40", change: "+3.74%", up: true },
+  { symbol: "BABA", name: "Alibaba", price: "$72.10", change: "-4.28%", up: false },
+];
+
+const sectors = [
+  { name: "AI Infra", value: 92, tone: "bg-cyan-300" },
+  { name: "Semis", value: 86, tone: "bg-emerald-300" },
+  { name: "Cloud", value: 74, tone: "bg-sky-300" },
+  { name: "Energy", value: 58, tone: "bg-amber-300" },
+  { name: "Banks", value: 42, tone: "bg-rose-300" },
+];
+
+const events = [
+  { title: "Fed Rate Decision", time: "Tomorrow, 2:00 PM", impact: "High" },
+  { title: "US CPI YoY", time: "Jun 15, 8:30 AM", impact: "High" },
+  { title: "NVDA Earnings", time: "Jun 18, After Close", impact: "Medium" },
+];
+
+const briefing = [
+  "NVDA volume is 3.2x above its 30-day average with strong continuation breadth.",
+  "AAPL is approaching resistance near $218. Watch for volume confirmation.",
+  "Portfolio beta remains below market despite technology concentration.",
+];
+
+const fallbackWatchlist = [
+  { symbol: "AAPL", currentPrice: 214.72, change: 2.54, percentageChange: 1.2 },
+  { symbol: "MSFT", currentPrice: 486.1, change: 3.08, percentageChange: 0.64 },
+  { symbol: "NVDA", currentPrice: 151.9, change: 5.52, percentageChange: 3.76 },
+  { symbol: "AMZN", currentPrice: 185.42, change: -0.59, percentageChange: -0.32 },
+];
+
+function formatPrice(value) {
+  if (typeof value !== "number") return "--";
+  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`;
+}
+
+function Reveal({ children, className, delay = 0 }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function DashboardCard({ children, className }) {
+  return (
+    <motion.div
+      className={cn("premium-dashboard-card glass-surface rounded-lg p-5", className)}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function StatCard({ icon: Icon, label, value, detail, tone = "cyan", delay = 0 }) {
+  const tones = {
+    cyan: "border-cyan-200/20 bg-cyan-200/10 text-cyan-100",
+    emerald: "border-emerald-200/20 bg-emerald-200/10 text-emerald-100",
+    amber: "border-amber-200/20 bg-amber-200/10 text-amber-100",
+    rose: "border-rose-200/20 bg-rose-200/10 text-rose-100",
+  };
+
+  return (
+    <Reveal delay={delay}>
+      <DashboardCard className="min-h-36">
+        <div className="flex items-start justify-between gap-4">
+          <div className={cn("flex size-11 items-center justify-center rounded-lg border", tones[tone])}>
+            <Icon className="size-5" />
+          </div>
+          <span className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-slate-400">
+            Live
+          </span>
+        </div>
+        <p className="mt-6 text-sm font-medium text-slate-400">{label}</p>
+        <div className="mt-1 text-3xl font-semibold tracking-tight text-white">{value}</div>
+        <p className="mt-2 text-sm text-slate-500">{detail}</p>
+      </DashboardCard>
+    </Reveal>
+  );
+}
+
+function PortfolioChart() {
+  return (
+    <svg viewBox="0 0 760 280" className="h-full min-h-72 w-full">
+      <defs>
+        <linearGradient id="portfolioStroke" x1="0" x2="1" y1="0" y2="0">
+          <stop stopColor="#67e8f9" />
+          <stop offset="0.54" stopColor="#a7f3d0" />
+          <stop offset="1" stopColor="#fde68a" />
+        </linearGradient>
+        <linearGradient id="portfolioFill" x1="0" x2="0" y1="0" y2="1">
+          <stop stopColor="#67e8f9" stopOpacity="0.28" />
+          <stop offset="1" stopColor="#67e8f9" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[44, 96, 148, 200, 252].map((y) => (
+        <line key={y} x1="0" x2="760" y1={y} y2={y} stroke="rgba(255,255,255,0.07)" />
+      ))}
+      <motion.path
+        d="M0 248 C70 228 96 242 146 208 C210 166 258 188 316 142 C388 84 438 124 498 90 C572 48 632 72 760 34 L760 280 L0 280 Z"
+        fill="url(#portfolioFill)"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.7, delay: 0.25 }}
+      />
+      <motion.path
+        d="M0 248 C70 228 96 242 146 208 C210 166 258 188 316 142 C388 84 438 124 498 90 C572 48 632 72 760 34"
+        fill="none"
+        stroke="url(#portfolioStroke)"
+        strokeLinecap="round"
+        strokeWidth="4"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 1.35, delay: 0.18, ease: "easeOut" }}
+      />
+      {[
+        [146, 208],
+        [316, 142],
+        [498, 90],
+        [760, 34],
+      ].map(([x, y]) => (
+        <circle key={`${x}-${y}`} cx={x} cy={y} r="5" fill="#050812" stroke="#67e8f9" strokeWidth="3" />
+      ))}
+    </svg>
+  );
+}
+
+function MiniSparkline({ up = true }) {
+  const path = up
+    ? "M0 34 L18 28 L38 31 L58 18 L82 23 L112 8"
+    : "M0 12 L18 18 L38 15 L58 25 L82 22 L112 34";
+
+  return (
+    <svg viewBox="0 0 112 42" className="h-10 w-28">
+      <path
+        d={path}
+        fill="none"
+        stroke={up ? "#6ee7b7" : "#fda4af"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="3"
+      />
+    </svg>
+  );
+}
 
 export default function DashboardPage() {
   const { user, fetchWatchlist } = useContext(AuthContext);
-  const [widgets, setWidgets] = useState(DEFAULT_WIDGETS);
-  
-  // Customization & state
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchedStock, setSearchedStock] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState(null);
+  const [searchError, setSearchError] = useState("");
   const [watchlistStocks, setWatchlistStocks] = useState([]);
-  
-  // Gamification & insights
-  const [insightScore, setInsightScore] = useState(120);
-  const [streak, setStreak] = useState(3);
-  const [scannedSignal, setScannedSignal] = useState(null);
-  const [scanLoading, setScanLoading] = useState(false);
-  const [savedLayoutMsg, setSavedLayoutMsg] = useState(false);
-  
-  // Tabs and toggles
-  const [moversTab, setMoversTab] = useState('gainers');
-  const [pnlRange, setPnlRange] = useState('1D');
 
-  // Load layout and state from localStorage
+  const watchlistSymbols = useMemo(() => user?.watchlist || [], [user?.watchlist]);
+
   useEffect(() => {
-    fetchWatchlist();
-    
-    const savedWidgets = localStorage.getItem('bulltrade_widgets_layout');
-    if (savedWidgets) {
-      try {
-        setWidgets(JSON.parse(savedWidgets));
-      } catch (e) {
-        console.error("Error loading widgets layout", e);
-      }
-    }
-
-    const savedScore = localStorage.getItem('bulltrade_insight_score');
-    if (savedScore) {
-      setInsightScore(Number(savedScore));
-    }
-    
-    const savedStreak = localStorage.getItem('bulltrade_user_streak');
-    if (savedStreak) {
-      setStreak(Number(savedStreak));
-    }
+    fetchWatchlist?.();
+    // AuthContext recreates this helper when user state changes, so this is an intentional mount-only refresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Watchlist detailed quote loader
   useEffect(() => {
-    const loadWatchlistQuotes = async () => {
-      if (user?.watchlist?.length > 0) {
-        try {
-          const details = [];
-          for (const symbol of user.watchlist) {
-            try {
-              const res = await api.get(`/stocks/quote/${symbol}`);
-              if (res.data) details.push(res.data);
-              await new Promise(resolve => setTimeout(resolve, 300)); // Rate limit buffer
-            } catch (err) {
-              details.push({ symbol, error: true });
-            }
-          }
-          setWatchlistStocks(details);
-        } catch (err) {
-          console.error("Failed to load watchlist quotes", err);
-        }
-      } else {
-        setWatchlistStocks([]);
-      }
-    };
-    loadWatchlistQuotes();
-  }, [user?.watchlist]);
+    let mounted = true;
 
-  // Handle stock searches
-  const handleStockSearch = async (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
+    async function loadQuotes() {
+      if (!watchlistSymbols.length) {
+        setWatchlistStocks(fallbackWatchlist);
+        return;
+      }
+
+      const symbols = watchlistSymbols.slice(0, 6);
+      const results = [];
+
+      for (const symbol of symbols) {
+        try {
+          const response = await api.get(`/stocks/quote/${symbol}`);
+          if (response.data) results.push(response.data);
+        } catch {
+          results.push({ symbol, error: true });
+        }
+      }
+
+      if (mounted) setWatchlistStocks(results.length ? results : fallbackWatchlist);
+    }
+
+    loadQuotes();
+
+    return () => {
+      mounted = false;
+    };
+  }, [watchlistSymbols]);
+
+  const handleStockSearch = async (event) => {
+    event.preventDefault();
+    const symbol = searchQuery.trim().toUpperCase();
+    if (!symbol) return;
 
     setSearchLoading(true);
-    setSearchError(null);
+    setSearchError("");
+    setSearchedStock(null);
+
     try {
-      const response = await api.get(`/stocks/quote/${searchQuery}`);
+      const response = await api.get(`/stocks/quote/${symbol}`);
       setSearchedStock(response.data);
-      incrementScore(15);
-    } catch (err) {
-      setSearchError('Symbol not found or API limits exceeded.');
-      setSearchedStock(null);
+    } catch {
+      setSearchError("That symbol could not be loaded right now. Try AAPL, MSFT, NVDA, or TSLA.");
     } finally {
       setSearchLoading(false);
     }
   };
 
-  // Reorder, pin, hide functions
-  const moveWidget = (index, direction) => {
-    const newWidgets = [...widgets];
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= newWidgets.length) return;
-    
-    // Swap
-    const temp = newWidgets[index];
-    newWidgets[index] = newWidgets[targetIndex];
-    newWidgets[targetIndex] = temp;
-    setWidgets(newWidgets);
-  };
-
-  const togglePin = (id) => {
-    setWidgets(prev => {
-      const updated = prev.map(w => w.id === id ? { ...w, isPinned: !w.isPinned } : w);
-      // Sort pinned to top
-      const pinned = updated.filter(w => w.isPinned);
-      const unpinned = updated.filter(w => !w.isPinned);
-      return [...pinned, ...unpinned];
-    });
-    incrementScore(5);
-  };
-
-  const hideWidget = (id) => {
-    setWidgets(prev => prev.map(w => w.id === id ? { ...w, isHidden: true } : w));
-  };
-
-  const restoreWidget = (id) => {
-    setWidgets(prev => prev.map(w => w.id === id ? { ...w, isHidden: false } : w));
-    incrementScore(5);
-  };
-
-  const saveLayout = () => {
-    localStorage.setItem('bulltrade_widgets_layout', JSON.stringify(widgets));
-    setSavedLayoutMsg(true);
-    setTimeout(() => setSavedLayoutMsg(false), 2500);
-    incrementScore(10);
-  };
-
-  const resetLayout = () => {
-    setWidgets(DEFAULT_WIDGETS);
-    localStorage.removeItem('bulltrade_widgets_layout');
-  };
-
-  const incrementScore = (amount) => {
-    setInsightScore(prev => {
-      const next = prev + amount;
-      localStorage.setItem('bulltrade_insight_score', String(next));
-      return next;
-    });
-  };
-
-  // Gamified market scanner trigger
-  const runTechnicalScan = () => {
-    setScanLoading(true);
-    setTimeout(() => {
-      const signals = [
-        "RSI Golden Cross: AMD exhibits strong momentum above SMA 50.",
-        "MACD Bullish Crossover identified on NVDA hourly chart.",
-        "Golden Cross Alert: TSLA's 50-day EMA crossed above the 200-day EMA.",
-        "Volume Breakout: MSFT volume surged 2.4x standard morning deviations.",
-        "Support Bounce: AAPL bounced cleanly off historical support at $180."
-      ];
-      const randomSignal = signals[Math.floor(Math.random() * signals.length)];
-      setScannedSignal(randomSignal);
-      setScanLoading(false);
-      incrementScore(25);
-    }, 1200);
-  };
-
-  // Sparkline generator helper (reduced height to 26px for denser display)
-  const drawSparkline = (points, color = '#22c55e') => {
-    const width = 120;
-    const height = 26;
-    const min = Math.min(...points);
-    const max = Math.max(...points);
-    const range = max - min || 1;
-    const step = width / (points.length - 1);
-    
-    const coords = points.map((p, i) => {
-      const x = i * step;
-      const y = height - ((p - min) / range) * height;
-      return `${x},${y}`;
-    }).join(' ');
-    
-    return (
-      <svg width={width} height={height} className="overflow-visible">
-        <polyline
-          fill="none"
-          stroke={color}
-          strokeWidth="2"
-          points={coords}
-        />
-      </svg>
-    );
-  };
-
-  // Computed achievements
-  const watchlistAchievement = user?.watchlist?.length > 0;
-  const layoutSavedAchievement = localStorage.getItem('bulltrade_widgets_layout') !== null;
-  const expertAchievement = insightScore >= 200;
-
-  // Filter hidden widgets list
-  const hiddenWidgets = widgets.filter(w => w.isHidden);
+  const displayWatchlist = watchlistStocks.length ? watchlistStocks : fallbackWatchlist;
 
   return (
-    <div className="w-full relative z-10 font-sans">
-      
-      {/* Top Controller Toolbar */}
-      <header className="mb-3 flex flex-row justify-end items-center gap-3 border-b border-white/5 pb-2">
-        
-        {hiddenWidgets.length > 0 && (
-          <div className="relative group">
-            <button className="bg-slate-900 border border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition cursor-pointer flex items-center gap-1.5 text-slate-300">
-              Add Widgets ({hiddenWidgets.length})
-            </button>
-            <div className="absolute right-0 top-full mt-1.5 w-48 bg-slate-950 border border-white/10 rounded-lg shadow-2xl p-1.5 hidden group-hover:block z-30">
-              {hiddenWidgets.map(w => (
-                <button
-                  key={w.id}
-                  onClick={() => restoreWidget(w.id)}
-                  className="w-full text-left px-2 py-1.5 hover:bg-white/5 rounded-md text-xs font-bold transition text-slate-400 hover:text-white"
-                >
-                  + {w.title}
-                </button>
-              ))}
+    <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-5 pb-8">
+      <Reveal>
+        <section className="premium-dashboard-hero relative overflow-hidden rounded-lg border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.105),rgba(255,255,255,0.035))] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.28)] backdrop-blur-2xl sm:p-6">
+          <div className="absolute right-[-12rem] top-[-18rem] size-[34rem] rounded-full bg-cyan-300/10 blur-3xl" />
+          <div className="absolute bottom-[-18rem] left-[18%] size-[30rem] rounded-full bg-amber-200/10 blur-3xl" />
+
+          <div className="relative grid gap-6 lg:grid-cols-[1fr_27rem] lg:items-end">
+            <div>
+              <h1 className="max-w-4xl text-3xl font-semibold tracking-tight text-white sm:text-5xl">
+                Welcome back{user?.username ? `, ${user.username}` : ""}. Your market is organized.
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+                Track portfolio momentum, watchlist pressure, market breadth, and actionable signals from one calm workspace.
+              </p>
             </div>
+
+            <form onSubmit={handleStockSearch} className="relative">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Research a symbol
+              </label>
+              <div className="flex gap-2 rounded-lg border border-white/10 bg-slate-950/50 p-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
+                  <Search className="size-4 shrink-0 text-slate-500" />
+                  <input
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder="AAPL, NVDA, MSFT..."
+                    className="min-w-0 flex-1 bg-transparent text-sm font-semibold uppercase text-white outline-none placeholder:normal-case placeholder:text-slate-600"
+                  />
+                </div>
+                <button
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:opacity-60"
+                  disabled={searchLoading}
+                  type="submit"
+                >
+                  {searchLoading ? <Loader2 className="size-4 animate-spin" /> : <ArrowRight className="size-4" />}
+                  Search
+                </button>
+              </div>
+              {searchError ? (
+                <div className="mt-3 flex items-center gap-2 text-sm text-rose-300">
+                  <AlertCircle className="size-4" />
+                  {searchError}
+                </div>
+              ) : null}
+            </form>
           </div>
-        )}
-        
-        <button
-          onClick={resetLayout}
-          className="bg-slate-900 border border-white/10 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-          title="Reset Widgets Layout"
-        >
-          <RotateCcw className="h-4 w-4" />
-        </button>
-        
-        <button
-          onClick={saveLayout}
-          className="bg-cyan-700 hover:bg-cyan-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-cyan-950/20"
-        >
-          <Save className="h-3.5 w-3.5" /> Save Layout
-        </button>
+        </section>
+      </Reveal>
 
-        {savedLayoutMsg && (
-          <span className="text-xs text-emerald-400 font-bold animate-fade-in flex items-center gap-1">
-            <Check className="h-3.5 w-3.5" /> Layout Saved!
-          </span>
-        )}
-      </header>
-
-      {/* Grid container with compressed gap (gap-3) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 items-start">
-        
-        {/* Dynamic Search result banner outside modular config */}
-        {searchedStock && (
-          <div className="lg:col-span-3 glass-surface rounded-xl p-4 relative overflow-hidden animate-slide-up border border-cyan-400/20">
-            <div className="flex justify-between items-center mb-2.5 border-b border-white/10 pb-1.5">
-              <h3 className="text-xs font-bold font-sans text-white flex items-center gap-1.5">
-                <Sparkles className="h-4 w-4 text-cyan-400" />
-                Active Stock Research: {searchedStock.symbol}
-              </h3>
-              <button 
+      {searchedStock ? (
+        <Reveal>
+          <DashboardCard className="border-cyan-200/24">
+            <div className="mb-4 flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">Active research</p>
+                <h2 className="mt-1 text-xl font-semibold text-white">{searchedStock.symbol}</h2>
+              </div>
+              <button
+                className="self-start rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white sm:self-auto"
                 onClick={() => setSearchedStock(null)}
-                className="text-xs text-slate-500 hover:text-white transition cursor-pointer"
+                type="button"
               >
                 Close Panel
               </button>
             </div>
             <div className="max-w-md">
-              <StockCard stockData={searchedStock} isWatchlisted={user?.watchlist?.includes(searchedStock.symbol)} />
+              <StockCard
+                stockData={searchedStock}
+                isWatchlisted={watchlistSymbols.includes(searchedStock.symbol)}
+              />
             </div>
-          </div>
-        )}
+          </DashboardCard>
+        </Reveal>
+      ) : null}
 
-        {/* Map Widgets with rounded-xl and p-3 for high visual density */}
-        {widgets.map((widget, idx) => {
-          if (widget.isHidden) return null;
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          icon={Wallet}
+          label="Portfolio Value"
+          value="$428,940"
+          detail="+$12,420 this month"
+          tone="cyan"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Daily P&L"
+          value="+$8,216"
+          detail="+1.94% versus open"
+          tone="emerald"
+          delay={0.05}
+        />
+        <StatCard
+          icon={BellRing}
+          label="Signal Alerts"
+          value="18"
+          detail="5 high priority"
+          tone="amber"
+          delay={0.1}
+        />
+        <StatCard
+          icon={ShieldCheck}
+          label="Risk Level"
+          value="Moderate"
+          detail="Beta 0.94, drawdown -6.1%"
+          tone="rose"
+          delay={0.15}
+        />
+      </section>
 
-          return (
-            <div 
-              key={widget.id} 
-              className={`glass-surface rounded-xl p-3 relative overflow-hidden group transition-all duration-350 hover:border-white/15 ${widget.w} ${widget.isPinned ? 'ring-1 ring-cyan-500/20' : ''}`}
-            >
-              
-              {/* Widget Action Header - tighter spacing and small text */}
-              <div className="flex justify-between items-center mb-2 border-b border-white/5 pb-1">
-                <h2 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-sans flex items-center gap-1.5">
-                  <span className="w-0.5 h-3 bg-cyan-500 rounded-full" />
-                  {widget.title}
-                </h2>
-                
-                <div className="flex items-center gap-1.5 opacity-35 group-hover:opacity-100 transition-opacity">
-                  <button 
-                    onClick={() => togglePin(widget.id)}
-                    className={`p-0.5 hover:bg-white/10 rounded transition cursor-pointer ${widget.isPinned ? 'text-cyan-400' : 'text-slate-500'}`}
-                    title="Pin Widget"
-                  >
-                    <Pin className="h-3 w-3" />
-                  </button>
-                  <button 
-                    onClick={() => moveWidget(idx, -1)}
-                    className="p-0.5 text-slate-500 hover:text-white hover:bg-white/10 rounded transition cursor-pointer text-[10px]"
-                    title="Move Up/Left"
-                  >
-                    ◀
-                  </button>
-                  <button 
-                    onClick={() => moveWidget(idx, 1)}
-                    className="p-0.5 text-slate-500 hover:text-white hover:bg-white/10 rounded transition cursor-pointer text-[10px]"
-                    title="Move Down/Right"
-                  >
-                    ▶
-                  </button>
-                  <button 
-                    onClick={() => hideWidget(widget.id)}
-                    className="p-0.5 text-slate-500 hover:text-rose-400 hover:bg-white/10 rounded transition cursor-pointer"
-                    title="Hide Widget"
-                  >
-                    <EyeOff className="h-3 w-3" />
-                  </button>
+      <section className="grid gap-4 xl:grid-cols-[1.55fr_0.95fr]">
+        <Reveal delay={0.05}>
+          <DashboardCard className="min-h-[30rem]">
+            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Portfolio Analytics
+                </p>
+                <div className="mt-2 flex flex-wrap items-end gap-3">
+                  <h2 className="text-3xl font-semibold tracking-tight text-white">$428,940.18</h2>
+                  <span className="inline-flex items-center gap-1 rounded-lg border border-emerald-300/20 bg-emerald-300/10 px-2 py-1 text-sm font-semibold text-emerald-200">
+                    <ArrowUpRight className="size-4" />
+                    18.4% YTD
+                  </span>
                 </div>
               </div>
-
-              {/* Widget Content Router */}
-              <div className="text-xs">
-                
-                {/* 1. Market Overview */}
-                {widget.id === 'market-overview' && (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-                    {[
-                      { name: 'S&P 500', value: '5,431.22', chg: '+0.84%', trend: [5380, 5395, 5410, 5402, 5431], color: '#22c55e' },
-                      { name: 'NASDAQ', value: '17,885.30', chg: '+1.12%', trend: [17650, 17720, 17690, 17810, 17885], color: '#22c55e' },
-                      { name: 'Dow Jones', value: '39,122.18', chg: '+0.45%', trend: [38950, 39020, 39010, 39080, 39122], color: '#22c55e' },
-                      { name: 'Russell 2000', value: '2,014.50', chg: '-0.18%', trend: [2035, 2028, 2031, 2011, 2014], color: '#f43f5e' }
-                    ].map(idx => (
-                      <div key={idx.name} className="bg-slate-950/45 border border-white/5 rounded-lg p-2">
-                        <div className="flex justify-between items-start">
-                          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">{idx.name}</span>
-                          <span className={`text-[10px] font-bold ${idx.chg.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>{idx.chg}</span>
-                        </div>
-                        <p className="text-base font-bold font-sans text-white mt-0.5 tracking-tight">{idx.value}</p>
-                        <div className="mt-1.5 flex justify-center">{drawSparkline(idx.trend, idx.color)}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 2. AI Insights */}
-                {widget.id === 'ai-insights' && (
-                  <div className="space-y-1.5">
-                    {[
-                      { icon: <Cpu className="h-3.5 w-3.5 text-cyan-400" />, text: "NVIDIA volume is 3.2x above its 30-day average. Extreme buy momentum detected." },
-                      { icon: <Zap className="h-3.5 w-3.5 text-amber-400" />, text: "Apple (AAPL) is approaching a key resistance level at $218. Watch for breakout signal." },
-                      { icon: <Activity className="h-3.5 w-3.5 text-slate-400" />, text: "Tesla (TSLA) social discussion sentiment has increased 18% following regulatory nods." }
-                    ].map((ins, i) => (
-                      <div key={i} className="flex gap-2 bg-white/[0.02] border border-white/5 rounded-lg p-2.5">
-                        <div className="mt-0.5 shrink-0">{ins.icon}</div>
-                        <p className="text-xs text-slate-300 leading-normal">{ins.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 3. Top Movers */}
-                {widget.id === 'top-movers' && (
-                  <div>
-                    <div className="grid grid-cols-3 gap-1.5 p-0.5 bg-[#090d16]/80 border border-white/10 rounded-lg mb-2 text-center">
-                      {['gainers', 'losers', 'active'].map(t => (
-                        <button
-                          key={t}
-                          onClick={() => setMoversTab(t)}
-                          className={`py-0.5 text-[9px] font-bold uppercase tracking-wider rounded transition cursor-pointer ${moversTab === t ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-white'}`}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="space-y-1">
-                      {{
-                        gainers: [
-                          { sym: 'AMD', price: '$158.42', chg: '+7.42%', up: true },
-                          { sym: 'NVDA', price: '$151.90', chg: '+6.42%', up: true },
-                          { sym: 'ARM', price: '$124.18', chg: '+4.12%', up: true }
-                        ],
-                        losers: [
-                          { sym: 'BABA', price: '$72.10', chg: '-4.28%', up: false },
-                          { sym: 'NFLX', price: '$482.40', chg: '-3.15%', up: false },
-                          { sym: 'NIO', price: '$4.12', chg: '-2.96%', up: false }
-                        ],
-                        active: [
-                          { sym: 'TSLA', price: '$198.40', chg: '+3.74%', up: true },
-                          { sym: 'AAPL', price: '$214.72', chg: '+1.28%', up: true },
-                          { sym: 'AMZN', price: '$185.42', chg: '-0.32%', up: false }
-                        ]
-                      }[moversTab].map(stock => (
-                        <div key={stock.sym} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg px-2.5 py-1 transition hover:bg-white/[0.03]">
-                          <span className="font-extrabold text-white text-[11px]">{stock.sym}</span>
-                          <div className="text-right flex items-center gap-2.5">
-                            <span className="font-bold text-slate-300 text-[10px]">{stock.price}</span>
-                            <span className={`text-[10px] font-bold ${stock.up ? 'text-emerald-400' : 'text-rose-400'}`}>{stock.chg}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. Watchlist */}
-                {widget.id === 'watchlist-feed' && (
-                  <div>
-                    {watchlistStocks.length > 0 ? (
-                      <div className="space-y-1 max-h-52 overflow-y-auto pr-1">
-                        {watchlistStocks.map(stock => {
-                          if (stock.error) {
-                            return (
-                              <div key={stock.symbol} className="flex justify-between items-center bg-white/[0.02] border border-white/5 rounded-lg px-2.5 py-1">
-                                <span className="font-bold text-slate-500 uppercase">{stock.symbol}</span>
-                                <span className="text-[10px] text-amber-500 font-bold">Stale</span>
-                              </div>
-                            );
-                          }
-                          return (
-                            <Link href={`/stock/${stock.symbol}`} key={stock.symbol} className="flex justify-between items-center bg-white/[0.01] border border-white/5 hover:border-cyan-500/25 rounded-lg px-2.5 py-1.5 transition group/item">
-                              <div>
-                                <span className="font-extrabold text-white group-hover/item:text-cyan-400 transition-colors uppercase text-[11px]">{stock.symbol}</span>
-                                <p className="text-[8px] text-slate-500 font-bold uppercase mt-0.5">Ticker</p>
-                              </div>
-                              <div className="text-right flex items-center gap-2.5">
-                                <span className="font-bold text-slate-200 text-xs">${stock.currentPrice?.toFixed(2)}</span>
-                                <span className={`text-xs font-bold ${stock.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                  {stock.change >= 0 ? '+' : ''}{stock.percentageChange?.toFixed(1)}%
-                                </span>
-                              </div>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="py-4 text-center text-xs text-slate-500 font-medium">
-                        Search stocks in terminal header and bookmark them to populate this stream.
-                      </div>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                {["1D", "1M", "YTD"].map((range, index) => (
+                  <button
+                    className={cn(
+                      "rounded-lg border px-3 py-2 font-semibold",
+                      index === 2
+                        ? "border-cyan-200/30 bg-cyan-200/12 text-cyan-100"
+                        : "border-white/10 bg-white/5 text-slate-400",
                     )}
-                  </div>
-                )}
-
-                {/* 5. Portfolio P&L */}
-                {widget.id === 'portfolio-pnl' && (
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <div>
-                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Net Holdings Value</span>
-                        <h4 className="text-lg font-bold text-white mt-0.5">$24,820.00</h4>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[11px] font-bold text-emerald-400 block">+1.98% today</span>
-                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5 block">+$480.20</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-1 justify-end p-0.5 bg-[#090d16]/80 border border-white/10 rounded mb-2 text-center max-w-[120px] ml-auto">
-                      {['1D', '1W', '1M'].map(range => (
-                        <button
-                          key={range}
-                          onClick={() => setPnlRange(range)}
-                          className={`flex-1 py-0.5 text-[8px] font-bold uppercase rounded transition cursor-pointer ${pnlRange === range ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-white'}`}
-                        >
-                          {range}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="h-16 flex items-end justify-center">
-                      {pnlRange === '1D' && drawSparkline([24340, 24410, 24390, 24520, 24820], '#22c55e')}
-                      {pnlRange === '1W' && drawSparkline([23540, 23780, 24100, 23920, 24820], '#22c55e')}
-                      {pnlRange === '1M' && drawSparkline([21890, 22430, 23110, 22910, 24820], '#22c55e')}
-                    </div>
-                  </div>
-                )}
-
-                {/* 6. Market News Feed (timeline) */}
-                {widget.id === 'news-timeline' && (
-                  <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
-                    {[
-                      { headline: "Fed maintains interest rates; Powell hints at September policy evaluation.", date: "10m ago", src: "Bloomberg", impact: "HIGH", color: "text-rose-400 border-rose-500/20 bg-rose-500/5" },
-                      { headline: "NVIDIA shares surge 6.4% on high supply orders for AI Blackwell chips.", date: "40m ago", src: "Reuters", impact: "HIGH", color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/5" },
-                      { headline: "Tech stocks lead rally as NASDAQ climbs 1.1% on strong volume metrics.", date: "1h ago", src: "Refinitiv", impact: "MED", color: "text-cyan-400 border-cyan-500/20 bg-cyan-500/5" },
-                      { headline: "Apple (AAPL) analyst upgrade: target raised to $230 at Morgan Stanley.", date: "2h ago", src: "Bloomberg", impact: "MED", color: "text-cyan-400 border-cyan-500/20 bg-cyan-500/5" },
-                      { headline: "Watchlist Alert: AMD breaches $160 resistance on heavy call options volume.", date: "3h ago", src: "BullTrade", impact: "HIGH", color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/5" },
-                      { headline: "Treasury yields slide to 4.21% following weaker inflation indices.", date: "4h ago", src: "Reuters", impact: "LOW", color: "text-slate-400 border-slate-500/20 bg-slate-500/5" }
-                    ].map((news, idx) => (
-                      <div key={idx} className="space-y-1 bg-white/[0.01] border border-white/5 rounded-lg p-2.5 flex flex-col hover:bg-white/[0.02]">
-                        <div className="flex justify-between items-center text-[8px] font-bold text-slate-500 uppercase">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-slate-400">{news.src}</span>
-                            <span>•</span>
-                            <span>{news.date}</span>
-                          </div>
-                          <span className={`px-1.5 py-0.2 rounded border text-[7px] ${news.color}`}>
-                            {news.impact} IMPACT
-                          </span>
-                        </div>
-                        <p className="text-xs font-semibold text-slate-200 leading-snug hover:text-cyan-400 transition-colors cursor-pointer">{news.headline}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 7. Market Heatmap */}
-                {widget.id === 'market-heatmap' && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {/* Sector Performance */}
-                    <div className="space-y-1">
-                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Sector performance</span>
-                      {[
-                        { name: 'Technology', value: '+2.42%', up: true },
-                        { name: 'Financials', value: '+0.84%', up: true },
-                        { name: 'Healthcare', value: '+0.12%', up: true },
-                        { name: 'Energy', value: '-1.45%', up: false }
-                      ].map(sec => (
-                        <div key={sec.name} className="flex justify-between items-center bg-[#090d16]/30 border border-white/5 rounded-lg px-2.5 py-1">
-                          <span className="text-[11px] font-bold text-slate-300">{sec.name}</span>
-                          <span className={`text-[11px] font-bold ${sec.up ? 'text-emerald-400' : 'text-rose-400'}`}>{sec.value}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Capital Flow */}
-                    <div className="space-y-1.5">
-                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Net Capital Flow</span>
-                      {[
-                        { name: 'Tech Inflows', percent: 84, color: 'bg-emerald-500' },
-                        { name: 'Financials Inflows', percent: 52, color: 'bg-emerald-500' },
-                        { name: 'Energy Outflows', percent: 74, color: 'bg-rose-500' }
-                      ].map(flow => (
-                        <div key={flow.name} className="space-y-0.5">
-                          <div className="flex justify-between text-[9px] font-bold text-slate-400">
-                            <span>{flow.name}</span>
-                            <span>{flow.percent}%</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-slate-900 border border-white/5 rounded-full overflow-hidden">
-                            <div className={`h-full ${flow.color} rounded-full`} style={{ width: `${flow.percent}%` }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Market Sentiment dial */}
-                    <div className="flex flex-col items-center justify-center p-2 bg-white/[0.01] border border-white/5 rounded-xl text-center">
-                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 block">Overall Sentiment</span>
-                      <div className="grid size-16 place-items-center rounded-full bg-[conic-gradient(#06b6d4_0_72%,rgba(255,255,255,0.08)_72%_100%)]">
-                        <div className="grid size-12 place-items-center rounded-full bg-[#090d16] text-xs font-bold text-cyan-400">
-                          72%
-                        </div>
-                      </div>
-                      <span className="text-[9px] text-emerald-400 font-bold mt-1 uppercase tracking-wide">Highly Bullish Dial</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* 8. Fear & Greed Index */}
-                {widget.id === 'fear-greed' && (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Current Market State</span>
-                      <span className="text-xs font-black text-emerald-400">78 // Extreme Greed</span>
-                    </div>
-                    {/* Speedometer Track */}
-                    <div className="w-full h-2 bg-slate-900 border border-white/5 rounded-full overflow-hidden relative">
-                      <div className="h-full bg-gradient-to-r from-rose-500 via-amber-500 to-emerald-500 rounded-full" style={{ width: '100%' }} />
-                      <div className="absolute top-0 bottom-0 w-1 bg-white border border-black shadow" style={{ left: '78%' }} />
-                    </div>
-                    {/* Historic index comparison */}
-                    <div className="grid grid-cols-3 gap-1 text-center text-[9px] text-slate-400 font-semibold mt-1">
-                      <div className="bg-[#090d16]/45 border border-white/5 p-1 rounded">
-                        <span className="block text-[8px] text-slate-500">Yesterday</span>
-                        <span className="font-bold text-emerald-500">74</span>
-                      </div>
-                      <div className="bg-[#090d16]/45 border border-white/5 p-1 rounded">
-                        <span className="block text-[8px] text-slate-500">Last Week</span>
-                        <span className="font-bold text-emerald-500">70</span>
-                      </div>
-                      <div className="bg-[#090d16]/45 border border-white/5 p-1 rounded">
-                        <span className="block text-[8px] text-slate-500">Last Month</span>
-                        <span className="font-bold text-amber-500">65</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 9. Economic Calendar */}
-                {widget.id === 'economic-calendar' && (
-                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                    {[
-                      { event: "US CPI (YoY)", time: "June 12", exp: "3.1%", act: "3.0%", color: "text-emerald-400 border-emerald-500/25 bg-emerald-500/5", state: "Bullish" },
-                      { event: "Fed Rate Decision", time: "June 14", exp: "5.25%", act: "5.25%", color: "text-slate-400 border-white/10 bg-white/5", state: "Neutral" },
-                      { event: "Unemployment Rate", time: "June 15", exp: "3.9%", act: "4.0%", color: "text-rose-400 border-rose-500/25 bg-rose-500/5", state: "Bearish" }
-                    ].map((eco, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
-                        <div>
-                          <span className="text-[11px] font-bold text-slate-200 block">{eco.event}</span>
-                          <span className="text-[8px] text-slate-500 block uppercase font-bold">{eco.time}</span>
-                        </div>
-                        <div className="text-right flex items-center gap-2">
-                          <div className="text-[9px] text-slate-450 font-semibold leading-tight text-left">
-                            <span className="block text-[8px] text-slate-500">Exp: {eco.exp}</span>
-                            <span className="block text-[10px] text-slate-300">Act: {eco.act}</span>
-                          </div>
-                          <span className={`px-1.5 py-0.5 rounded border text-[8px] font-bold ${eco.color}`}>
-                            {eco.state}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 10. Earnings Calendar */}
-                {widget.id === 'earnings-calendar' && (
-                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                    {[
-                      { ticker: "AAPL", date: "June 15", est: "$1.42", schedule: "After Close" },
-                      { ticker: "TSLA", date: "June 16", est: "$0.62", schedule: "After Close" },
-                      { ticker: "NVDA", date: "June 18", est: "$2.84", schedule: "Before Open" }
-                    ].map((earn, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
-                        <div>
-                          <span className="text-[11px] font-black text-white block uppercase">{earn.ticker}</span>
-                          <span className="text-[8px] text-slate-500 block uppercase font-bold">{earn.date}</span>
-                        </div>
-                        <div className="text-right leading-tight">
-                          <span className="text-[10px] font-bold text-slate-300 block">Est: {earn.est}</span>
-                          <span className="text-[8px] text-slate-500 font-semibold block">{earn.schedule}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 11. Options Flow & Activity */}
-                {widget.id === 'options-activity' && (
-                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                    {[
-                      { contract: "NVDA $160 Call", exp: "June 26", vol: "24.5K (12x)", sentiment: "Bullish", up: true },
-                      { contract: "TSLA $180 Put", exp: "July 02", vol: "18.2K (8x)", sentiment: "Bearish", up: false },
-                      { contract: "AAPL $220 Call", exp: "June 19", vol: "15.1K (5x)", sentiment: "Bullish", up: true }
-                    ].map((opt, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
-                        <div>
-                          <span className="text-[11px] font-bold text-slate-200 block uppercase">{opt.contract}</span>
-                          <span className="text-[8px] text-slate-500 block uppercase font-bold">Exp: {opt.exp}</span>
-                        </div>
-                        <div className="text-right flex items-center gap-2">
-                          <div className="text-[9px] text-slate-405 font-semibold leading-tight text-left">
-                            <span className="block text-[8px] text-slate-500">Vol: {opt.vol}</span>
-                          </div>
-                          <span className={`px-1 py-0.5 rounded text-[8px] font-bold uppercase ${opt.up ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border border-rose-500/20'}`}>
-                            {opt.sentiment}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 12. Insider Transactions */}
-                {widget.id === 'insider-trading' && (
-                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                    {[
-                      { ticker: "NVDA", name: "J. Cox (Director)", action: "SOLD", val: "$1.2M", up: false },
-                      { ticker: "AAPL", name: "L. Maestri (CFO)", action: "SOLD", val: "$820K", up: false },
-                      { ticker: "AMD", name: "L. Su (CEO)", action: "BOUGHT", val: "$2.4M", up: true }
-                    ].map((ins, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-black text-white uppercase">{ins.ticker}</span>
-                            <span className="text-[8px] text-slate-500 font-bold truncate max-w-[80px]">{ins.name}</span>
-                          </div>
-                          <span className={`text-[8px] font-bold uppercase ${ins.up ? 'text-emerald-400' : 'text-rose-400'}`}>{ins.action}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[11px] font-extrabold text-slate-200">{ins.val}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 13. 52W High/Low Tracker */}
-                {widget.id === 'high-low-tracker' && (
-                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                    {[
-                      { ticker: "MSFT", type: "52W High", price: "$438.20", chg: "+2.1%", up: true },
-                      { ticker: "AMZN", type: "52W High", price: "$189.50", chg: "+1.8%", up: true },
-                      { ticker: "INTC", type: "52W Low", price: "$28.40", chg: "-3.4%", up: false }
-                    ].map((hl, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
-                        <div>
-                          <span className="text-[11px] font-black text-white uppercase block">{hl.ticker}</span>
-                          <span className={`px-1 py-0.2 rounded border text-[7px] font-bold ${hl.up ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' : 'text-rose-400 border-rose-500/20 bg-rose-500/5'}`}>
-                            {hl.type}
-                          </span>
-                        </div>
-                        <div className="text-right leading-tight">
-                          <span className="text-[10px] font-bold text-slate-300 block">{hl.price}</span>
-                          <span className={`text-[9px] font-bold block ${hl.up ? 'text-emerald-400' : 'text-rose-400'}`}>{hl.chg}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 14. Discovery Hub */}
-                {widget.id === 'discovery-hub' && (
-                  <div className="space-y-1.5">
-                    {[
-                      { badge: "52W Breakout", details: "Amazon (AMZN) breached $189.50, hitting historical records.", c: "text-amber-400 border-amber-500/25 bg-amber-500/5" },
-                      { badge: "Analyst Upgrade", details: "Microsoft (MSFT) rated Strong Buy by Goldman Sachs.", c: "text-cyan-400 border-cyan-500/25 bg-cyan-500/5" },
-                      { badge: "Unusual Volume", details: "NVIDIA (NVDA) morning volume spikes 3.2x average.", c: "text-cyan-400 border-cyan-500/25 bg-cyan-500/5" }
-                    ].map((disc, idx) => (
-                      <div key={idx} className="bg-white/[0.01] border border-white/5 rounded-lg p-2.5 space-y-0.5">
-                        <span className={`inline-flex px-1.5 py-0.2 rounded-full text-[8px] font-bold border ${disc.c}`}>
-                          {disc.badge}
-                        </span>
-                        <p className="text-xs text-slate-300 font-semibold leading-normal">{disc.details}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 15. Investor Activity Feed */}
-                {widget.id === 'investor-activity' && (
-                  <div className="space-y-1.5">
-                    {[
-                      "3 stocks in your watchlist (NVDA, TSLA, AMD) moved more than 5% today.",
-                      "Your portfolio outperformed the S&P 500 this month by 4.2%.",
-                      "2 companies you follow (AAPL, MSFT) report earnings this week."
-                    ].map((feed, idx) => (
-                      <div key={idx} className="flex gap-2 items-start text-xs text-slate-300 bg-white/[0.01] border border-white/5 rounded-lg p-2 leading-normal">
-                        <Activity className="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                        <span>{feed}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 16. Technical Signals */}
-                {widget.id === 'technical-signals' && (
-                  <div className="space-y-2.5">
-                    <div className="grid grid-cols-3 gap-1 text-center text-[9px] font-bold">
-                      <div className="bg-[#090d16] border border-white/10 p-1.5 rounded-lg">
-                        <p className="text-slate-500 mb-0.5">RSI (14)</p>
-                        <p className="text-white font-extrabold text-[9px]">62 // Neutral</p>
-                      </div>
-                      <div className="bg-[#090d16] border border-white/10 p-1.5 rounded-lg">
-                        <p className="text-slate-500 mb-0.5">MACD</p>
-                        <p className="text-emerald-400 font-extrabold text-[9px]">Bullish Cross</p>
-                      </div>
-                      <div className="bg-[#090d16] border border-white/10 p-1.5 rounded-lg">
-                        <p className="text-slate-500 mb-0.5">EMA 50/200</p>
-                        <p className="text-emerald-400 font-extrabold text-[9px]">Golden Cross</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-white/[0.01] border border-white/5 p-2.5 rounded-xl relative overflow-hidden">
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Pattern Scanner</span>
-                        <button
-                          onClick={runTechnicalScan}
-                          disabled={scanLoading}
-                          className="bg-cyan-700 hover:bg-cyan-600 text-white px-2 py-0.5 rounded text-[8px] font-bold cursor-pointer disabled:opacity-50"
-                        >
-                          {scanLoading ? 'Scanning...' : 'Run Scan'}
-                        </button>
-                      </div>
-
-                      {scannedSignal ? (
-                        <p className="text-[10px] text-slate-200 font-semibold leading-normal animate-fade-in">
-                          {scannedSignal}
-                        </p>
-                      ) : (
-                        <p className="text-[10px] text-slate-500 leading-normal">
-                          Run technical scanner for S&P 500 signals.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* 17. Achievements & Streaks */}
-                {widget.id === 'achievements-card' && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center bg-[#090d16] border border-white/10 rounded-xl p-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-amber-500/10 border border-amber-500/20 rounded flex items-center justify-center text-amber-400 animate-pulse">
-                          <Award className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block">Streak</span>
-                          <span className="text-xs font-bold text-white font-sans mt-0.5 block">{streak} Days</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block">Score</span>
-                        <span className="text-sm font-bold text-cyan-400 font-sans mt-0.5 block">{insightScore} PTS</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Achievements</span>
-                      {[
-                        { title: 'First Watchlist', desc: 'Add 1 stock to watchlist.', met: watchlistAchievement },
-                        { title: 'Layout Architect', desc: 'Save custom widget configuration.', met: layoutSavedAchievement },
-                        { title: 'Expert Analyst', desc: 'Reach 200 insight score points.', met: expertAchievement }
-                      ].map(ach => (
-                        <div key={ach.title} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg px-2.5 py-1">
-                          <div>
-                            <span className="text-xs font-bold text-slate-200 block">{ach.title}</span>
-                            <span className="text-[8px] text-slate-500 font-semibold block">{ach.desc}</span>
-                          </div>
-                          <span className={`text-[8px] font-bold uppercase tracking-wider ${ach.met ? 'text-emerald-400' : 'text-slate-600'}`}>
-                            {ach.met ? 'Unlocked' : 'Locked'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 18. Recent Simulated Transactions */}
-                {widget.id === 'recent-transactions' && (
-                  <div className="w-full overflow-x-auto">
-                    <table className="w-full text-[10px] text-slate-350 border-collapse">
-                      <thead>
-                        <tr className="border-b border-white/10 text-slate-500 font-bold uppercase tracking-wider text-left">
-                          <th className="pb-1 font-bold">Ticker</th>
-                          <th className="pb-1 font-bold">Action</th>
-                          <th className="pb-1 font-bold">Price</th>
-                          <th className="pb-1 font-bold">Shares</th>
-                          <th className="pb-1 font-bold">Value</th>
-                          <th className="pb-1 font-bold">Date</th>
-                          <th className="pb-1 font-bold">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 font-semibold text-slate-300">
-                        {[
-                          { ticker: "NVDA", act: "BUY", price: "$145.20", shares: 10, val: "$1,452.00", date: "June 12", stat: "COMPLETED", up: true },
-                          { ticker: "AMD", act: "SELL", price: "$162.10", shares: 15, val: "$2,431.50", date: "June 10", stat: "COMPLETED", up: false },
-                          { ticker: "AAPL", act: "BUY", price: "$212.40", shares: 5, val: "$1,062.00", date: "June 08", stat: "COMPLETED", up: true }
-                        ].map((tx, idx) => (
-                          <tr key={idx} className="hover:bg-white/[0.01]">
-                            <td className="py-1 font-black uppercase text-white">{tx.ticker}</td>
-                            <td className={`py-1 ${tx.up ? 'text-emerald-400' : 'text-rose-400'}`}>{tx.act}</td>
-                            <td className="py-1 text-slate-300">{tx.price}</td>
-                            <td className="py-1 text-slate-350">{tx.shares}</td>
-                            <td className="py-1 text-slate-200 font-bold">{tx.val}</td>
-                            <td className="py-1 text-slate-400">{tx.date}</td>
-                            <td className="py-1 text-[8px]"><span className="px-1.5 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">COMPLETED</span></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
+                    key={range}
+                    type="button"
+                  >
+                    {range}
+                  </button>
+                ))}
               </div>
             </div>
-          );
-        })}
+            <PortfolioChart />
+          </DashboardCard>
+        </Reveal>
 
-      </div>
+        <Reveal delay={0.1}>
+          <DashboardCard className="min-h-[30rem]">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  AI Signal Brief
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-white">Actionable insights</h2>
+              </div>
+              <div className="flex size-11 items-center justify-center rounded-lg border border-cyan-200/20 bg-cyan-200/10 text-cyan-100">
+                <Brain className="size-5" />
+              </div>
+            </div>
 
+            <div className="space-y-3">
+              {briefing.map((item, index) => (
+                <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4" key={item}>
+                  <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                    <Zap className="size-3.5" />
+                    Signal {index + 1}
+                  </div>
+                  <p className="text-sm leading-6 text-slate-300">{item}</p>
+                </div>
+              ))}
+            </div>
+          </DashboardCard>
+        </Reveal>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[0.95fr_1fr_1fr_0.9fr]">
+        <Reveal>
+          <DashboardCard>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Market Pulse</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">Major indices</h2>
+              </div>
+              <BarChart3 className="size-5 text-cyan-100" />
+            </div>
+            <div className="space-y-2">
+              {indices.map((index) => (
+                <div
+                  className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.035] px-3 py-3"
+                  key={index.name}
+                >
+                  <div>
+                    <div className="font-semibold text-white">{index.name}</div>
+                    <div className="text-xs text-slate-500">{index.value}</div>
+                  </div>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold",
+                      index.up
+                        ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200"
+                        : "border-rose-300/20 bg-rose-300/10 text-rose-200",
+                    )}
+                  >
+                    {index.up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+                    {index.change}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </DashboardCard>
+        </Reveal>
+
+        <Reveal>
+          <DashboardCard>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Watchlist</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">Tracked positions</h2>
+              </div>
+              <LineChart className="size-5 text-cyan-100" />
+            </div>
+            <div className="space-y-2">
+              {displayWatchlist.map((stock) => {
+                const up = (stock.change ?? 0) >= 0;
+
+                return (
+                  <div
+                    className="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-lg border border-white/10 bg-white/[0.035] px-3 py-3"
+                    key={stock.symbol}
+                  >
+                    <div className="min-w-0">
+                      <div className="font-semibold text-white">{stock.symbol}</div>
+                      <div className="text-xs text-slate-500">Live quote</div>
+                    </div>
+                    <div className="hidden sm:block">
+                      <MiniSparkline up={up} />
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold text-slate-200">
+                        {stock.error ? "--" : formatPrice(stock.currentPrice)}
+                      </div>
+                      <div className={cn("text-xs font-semibold", up ? "text-emerald-300" : "text-rose-300")}>
+                        {stock.error ? "Rate limit" : `${stock.percentageChange?.toFixed?.(2) ?? "0.00"}%`}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </DashboardCard>
+        </Reveal>
+
+        <Reveal delay={0.05}>
+          <DashboardCard>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Market Movers</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">Session pressure</h2>
+              </div>
+              <Activity className="size-5 text-amber-100" />
+            </div>
+            <div className="space-y-2">
+              {movers.map((stock) => (
+                <div
+                  className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.035] px-3 py-3"
+                  key={stock.symbol}
+                >
+                  <div className="min-w-0">
+                    <div className="font-semibold text-white">{stock.symbol}</div>
+                    <div className="truncate text-xs text-slate-500">{stock.name}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold text-slate-200">{stock.price}</div>
+                    <div className={cn("flex items-center gap-1 text-xs font-semibold", stock.up ? "text-emerald-300" : "text-rose-300")}>
+                      {stock.up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+                      {stock.change}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DashboardCard>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <DashboardCard>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Market Sentiment</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">Greed index</h2>
+              </div>
+              <Gauge className="size-5 text-emerald-100" />
+            </div>
+            <div className="flex items-center gap-5">
+              <div className="grid size-28 shrink-0 place-items-center rounded-full bg-[conic-gradient(#67e8f9_0_72%,rgba(255,255,255,0.08)_72%_100%)]">
+                <div className="grid size-20 place-items-center rounded-full bg-[#080b13] text-2xl font-semibold text-cyan-100">
+                  72
+                </div>
+              </div>
+              <div>
+                <p className="font-semibold text-white">Constructive</p>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  Breadth is improving with volume concentrated in AI infrastructure and semiconductors.
+                </p>
+              </div>
+            </div>
+          </DashboardCard>
+        </Reveal>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Reveal>
+          <DashboardCard>
+            <div className="mb-5 flex items-center gap-3">
+              <PieChart className="size-5 text-cyan-100" />
+              <h2 className="text-xl font-semibold text-white">Sector Flow</h2>
+            </div>
+            <div className="space-y-4">
+              {sectors.map((sector) => (
+                <div key={sector.name}>
+                  <div className="mb-2 flex justify-between text-sm">
+                    <span className="font-medium text-slate-300">{sector.name}</span>
+                    <span className="text-slate-500">{sector.value}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-white/8">
+                    <motion.div
+                      className={cn("h-full rounded-full", sector.tone)}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${sector.value}%` }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DashboardCard>
+        </Reveal>
+
+        <Reveal delay={0.05}>
+          <DashboardCard>
+            <div className="mb-5 flex items-center gap-3">
+              <CalendarClock className="size-5 text-amber-100" />
+              <h2 className="text-xl font-semibold text-white">Upcoming Catalysts</h2>
+            </div>
+            <div className="space-y-3">
+              {events.map((event) => (
+                <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4" key={event.title}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-semibold text-white">{event.title}</div>
+                      <div className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                        <Clock3 className="size-3" />
+                        {event.time}
+                      </div>
+                    </div>
+                    <span className="rounded-lg border border-amber-200/20 bg-amber-200/10 px-2 py-1 text-xs font-semibold text-amber-100">
+                      {event.impact}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DashboardCard>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <DashboardCard>
+            <div className="mb-5 flex items-center gap-3">
+              <Layers className="size-5 text-emerald-100" />
+              <h2 className="text-xl font-semibold text-white">Risk Stack</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                ["Beta", "0.94", "Below market"],
+                ["Sharpe", "1.82", "Healthy"],
+                ["Max DD", "-6.1%", "Contained"],
+                ["Cash", "12.4%", "Ready"],
+              ].map(([label, value, detail]) => (
+                <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4" key={label}>
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</div>
+                  <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
+                  <div className="mt-1 text-xs text-slate-500">{detail}</div>
+                </div>
+              ))}
+            </div>
+          </DashboardCard>
+        </Reveal>
+      </section>
+
+      <Reveal>
+        <DashboardCard>
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Activity</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Recent portfolio events</h2>
+            </div>
+            <Target className="size-5 text-cyan-100" />
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {[
+              { icon: CheckCircle2, title: "Rebalance completed", copy: "Trimmed concentration in mega-cap tech by 2.8%." },
+              { icon: ArrowUpRight, title: "Breakout alert", copy: "NVDA cleared momentum threshold on elevated volume." },
+              { icon: ArrowDownRight, title: "Risk warning", copy: "Energy allocation slipped below target after sector rotation." },
+            ].map((item) => (
+              <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4" key={item.title}>
+                <item.icon className="size-5 text-cyan-100" />
+                <h3 className="mt-4 font-semibold text-white">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-400">{item.copy}</p>
+              </div>
+            ))}
+          </div>
+        </DashboardCard>
+      </Reveal>
     </div>
   );
 }
