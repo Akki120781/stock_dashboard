@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import ChartComponent from '../components/stock/ChartComponent';
 import { ArrowLeft, Send } from 'lucide-react';
+import LoadingScreen from '../components/common/LoadingScreen';
 
 const StockDetailsPage = () => {
     const { symbol } = useParams();
@@ -72,12 +73,17 @@ const StockDetailsPage = () => {
     };
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-gray-100">Loading comprehensive data...</div>;
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                <LoadingScreen inline={true} />
+            </div>
+        );
     }
 
     if (error) {
         return <div className="min-h-screen flex items-center justify-center text-red-500 dark:bg-gray-900">{error}</div>;
     }
+
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">

@@ -1,27 +1,41 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { AuthContext } from './context/AuthContext';
 
 // Pages
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import StockDetailsPage from './pages/StockDetailsPage';
 import UserPanelPage from './pages/UserPanelPage';
 import AdminPanelPage from './pages/AdminPanelPage';
+import LoadingScreen from './components/common/LoadingScreen';
 
 function App() {
   const { user, loading } = useContext(AuthContext);
+  const [showLoader, setShowLoader] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">Loading App...</div>;
+  useEffect(() => {
+    if (!loading) {
+      setFadeOut(true);
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 500); // 500ms matches the fade-out opacity duration
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+  if (showLoader) {
+    return <LoadingScreen fadeOut={fadeOut} />;
   }
 
   return (
     <Router>
-      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+      <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-[#020617] text-gray-900 dark:text-gray-100 transition-colors duration-200">
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -29,8 +43,8 @@ function App() {
             <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" />} />
             <Route path="/signup" element={!user ? <SignupPage /> : <Navigate to="/dashboard" />} />
 
-            {/* Redirect Root */}
-            <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+            {/* Redirect Root / Landing Page */}
+            <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
 
             {/* Protected User Routes */}
             <Route
@@ -78,3 +92,4 @@ function App() {
 }
 
 export default App;
+

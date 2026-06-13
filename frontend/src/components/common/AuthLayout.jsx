@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrendingUp, BarChart3, Activity } from 'lucide-react';
+import { BullLogo } from '../ui/bull-logo';
 
 const AuthLayout = ({ children, title, subtitle }) => {
     return (
@@ -20,10 +21,10 @@ const AuthLayout = ({ children, title, subtitle }) => {
                 <div className="relative z-10 flex flex-col justify-between p-16 w-full h-full">
                     <div>
                         <div className="flex items-center gap-3 mb-10">
-                            <div className="w-12 h-12 bg-gradient-to-br from-brand-400 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20">
-                                <TrendingUp className="text-white w-6 h-6" />
+                            <div className="w-12 h-12 bg-red-950/40 border border-red-500/20 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/10">
+                                <BullLogo className="w-6 h-6" />
                             </div>
-                            <span className="text-2xl font-black text-white tracking-tight">TradeDash</span>
+                            <span className="text-2xl font-black text-white tracking-tight">BullTrade</span>
                         </div>
                         
                         <h1 className="text-5xl font-bold text-white leading-tight mb-6">
@@ -93,10 +94,10 @@ const AuthLayout = ({ children, title, subtitle }) => {
             <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 sm:p-12 relative">
                 {/* Mobile Header (Only visible on small screens) */}
                 <div className="lg:hidden absolute top-8 left-8 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-indigo-600 rounded-lg flex items-center justify-center">
-                        <TrendingUp className="text-white w-4 h-4" />
+                    <div className="w-8 h-8 bg-red-950/40 border border-red-500/20 rounded-lg flex items-center justify-center">
+                        <BullLogo className="w-4 h-4" />
                     </div>
-                    <span className="text-xl font-bold dark:text-white text-slate-900">TradeDash</span>
+                    <span className="text-xl font-bold dark:text-white text-slate-900">BullTrade</span>
                 </div>
 
                 {/* Form Container */}

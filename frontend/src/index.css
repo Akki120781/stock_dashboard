@@ -3,6 +3,49 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --background: 0 0% 98%;
+  --foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --primary: 243.4 75.4% 58.6%; /* Indigo-600 */
+  --primary-foreground: 0 0% 100%;
+  --border: 220 14% 90%;
+  --input: 220 14% 90%;
+  --ring: 243.4 75.4% 58.6%;
+}
+
+.dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 93%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --primary: 172.5 66% 50%; /* Brand teal-500 */
+  --primary-foreground: 0 0% 0%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 172.5 66% 50%;
+}
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --animate-draw-chart: drawChart 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  
+  @keyframes drawChart {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
 @layer base {
   body {
     background-color: #fafafa;
@@ -17,6 +60,7 @@
     color: #ededed;
   }
 }
+
 
 @layer utilities {
   .glass-panel {
@@ -45,5 +89,31 @@
   
   .animation-delay-4000 {
     animation-delay: 4s;
+  }
+
+  .animate-marquee {
+    animation: marquee var(--duration, 40s) linear infinite;
+  }
+
+  .animate-marquee-reverse {
+    animation: marquee-reverse var(--duration, 40s) linear infinite;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-100% - var(--gap, 2rem)));
+  }
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(calc(-100% - var(--gap, 2rem)));
+  }
+  100% {
+    transform: translateX(0);
   }
 }

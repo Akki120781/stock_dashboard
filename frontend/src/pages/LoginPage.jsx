@@ -1,13 +1,9 @@
 import React from 'react';
-import LoginForm from '../components/auth/LoginForm';
-import AuthLayout from '../components/common/AuthLayout';
+import AnimatedCharactersAuth from '../components/ui/animated-characters-auth';
 
 const LoginPage = () => {
-    return (
-        <AuthLayout>
-            <LoginForm />
-        </AuthLayout>
-    );
+    return <AnimatedCharactersAuth mode="login" />;
 };
 
 export default LoginPage;
+
