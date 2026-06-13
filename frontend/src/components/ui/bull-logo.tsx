@@ -1,7 +1,11 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export function BullLogo({ className, ...props }) {
+interface BullLogoProps extends React.SVGProps<SVGSVGElement> {
+  className?: string;
+}
+
+export function BullLogo({ className, ...props }: BullLogoProps) {
   return (
     <svg
       viewBox="0 0 100 100"

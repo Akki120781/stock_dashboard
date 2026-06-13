@@ -66,6 +66,7 @@ import { Component as LoginPageComponent } from "@/components/ui/animated-charac
 import FlowArt, { FlowSection } from "@/components/ui/story-scroll";
 import { BullLogo } from "@/components/ui/bull-logo";
 import { BrandScroller } from "@/components/ui/brand-scoller";
+import FooterTapedComponent from "@/components/ui/footer-taped-design";
 
 const navItems = [
   { label: "Markets", href: "#markets" },
@@ -1518,102 +1519,53 @@ function FAQ() {
   );
 }
 
-function Footer() {
-  const groups = [
-    { title: "Product", links: ["Markets", "Watchlists", "Analytics", "Alerts"] },
-    { title: "Resources", links: ["Market Brief", "API Status", "Docs", "Security"] },
-    { title: "Company", links: ["About", "Careers", "Press", "Contact"] },
-    { title: "Legal", links: ["Privacy", "Terms", "Disclosures", "Compliance"] },
-  ];
-
-  return (
-    <footer className="border-t border-white/10 px-4 py-14 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.2fr_2fr]">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg border border-red-500/20 bg-red-950/40 text-red-500">
-              <BullLogo className="size-5" />
-            </span>
-            <span className="text-lg font-semibold text-white">BullTrade</span>
-          </div>
-          <p className="mt-4 max-w-sm text-sm leading-6 text-slate-500">
-            Premium market intelligence for investors who want clarity, speed, and a calmer way to act.
-          </p>
-          <div className="mt-6 flex gap-2">
-            {[Twitter, Github, Linkedin].map((Icon, index) => (
-              <button
-                className="flex size-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
-                key={index}
-                type="button"
-              >
-                <Icon className="size-4" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-          {groups.map((group) => (
-            <div key={group.title}>
-              <h4 className="text-sm font-semibold text-white">{group.title}</h4>
-              <div className="mt-4 space-y-3">
-                {group.links.map((link) => (
-                  <button
-                    className="block text-sm text-slate-500 transition hover:text-slate-200"
-                    key={link}
-                    type="button"
-                  >
-                    {link}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 export default function PremiumLandingPage() {
   const [authOpen, setAuthOpen] = useState(false);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050812] text-white">
-      <Navbar onAuth={() => setAuthOpen(true)} />
-      
-      <FlowArt aria-label="BullTrade Presentation">
-        <FlowSection aria-label="Hero">
-          <Hero onAuth={() => setAuthOpen(true)} />
-        </FlowSection>
+    <main className="relative min-h-screen bg-[#050812] text-white">
+      {/* Scrollable content wrapper */}
+      <div className="relative z-10 bg-[#050812] overflow-x-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] pb-12">
+        <Navbar onAuth={() => setAuthOpen(true)} />
         
-        <FlowSection aria-label="Markets">
-          <MarketOverview />
-        </FlowSection>
-        
-        <FlowSection aria-label="Features">
-          <FeaturesBento />
-        </FlowSection>
-        
-        <FlowSection aria-label="Analytics">
-          <AnalyticsShowcase />
-        </FlowSection>
-        
-        <FlowSection aria-label="About">
-          <WhyInvestorsChooseUs />
-        </FlowSection>
-        
-        <FlowSection aria-label="Testimonials">
-          <Testimonials />
-        </FlowSection>
-        
-        <FlowSection aria-label="Pricing">
-          <Pricing onAuth={() => setAuthOpen(true)} />
-        </FlowSection>
-      </FlowArt>
+        <FlowArt aria-label="BullTrade Presentation">
+          <FlowSection aria-label="Hero">
+            <Hero onAuth={() => setAuthOpen(true)} />
+          </FlowSection>
+          
+          <FlowSection aria-label="Markets">
+            <MarketOverview />
+          </FlowSection>
+          
+          <FlowSection aria-label="Features">
+            <FeaturesBento />
+          </FlowSection>
+          
+          <FlowSection aria-label="Analytics">
+            <AnalyticsShowcase />
+          </FlowSection>
+          
+          <FlowSection aria-label="About">
+            <WhyInvestorsChooseUs />
+          </FlowSection>
+          
+          <FlowSection aria-label="Testimonials">
+            <Testimonials />
+          </FlowSection>
+          
+          <FlowSection aria-label="Pricing">
+            <Pricing onAuth={() => setAuthOpen(true)} />
+          </FlowSection>
+        </FlowArt>
 
-      <FAQ />
-      <Footer />
+        <FAQ />
+      </div>
+
+      {/* Sticky Reveal Footer */}
+      <div className="sticky bottom-0 -z-10 w-full bg-[#050812]">
+        <FooterTapedComponent />
+      </div>
+
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </main>
   );
