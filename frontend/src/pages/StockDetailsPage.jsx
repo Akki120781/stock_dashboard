@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import ChartComponent from '../components/stock/ChartComponent';
@@ -8,7 +10,7 @@ import LoadingScreen from '../components/common/LoadingScreen';
 
 const StockDetailsPage = () => {
     const { symbol } = useParams();
-    const navigate = useNavigate();
+    const router = useRouter();
     const { user } = useContext(AuthContext);
 
     const [quote, setQuote] = useState(null);
@@ -89,7 +91,7 @@ const StockDetailsPage = () => {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 <button
-                    onClick={() => navigate(-1)}
+                    onClick={() => router.back()}
                     className="flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 mb-6 transition-colors"
                 >
                     <ArrowLeft className="h-4 w-4 mr-1" /> Back

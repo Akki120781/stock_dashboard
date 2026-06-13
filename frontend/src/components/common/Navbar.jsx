@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useContext, useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { AuthContext } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
 import { Sun, Moon, LogOut, LayoutDashboard, User as UserIcon, Shield, Bookmark, Activity } from 'lucide-react';
@@ -8,13 +11,13 @@ import { BullLogo } from '../ui/bull-logo';
 const Navbar = ({ openAuth }) => {
     const { user, logout, watchlistCount } = useContext(AuthContext);
     const { theme, toggleTheme } = useContext(ThemeContext);
-    const navigate = useNavigate();
-    const location = useLocation();
+    const router = useRouter();
+    const pathname = usePathname();
 
     const [isScrolled, setIsScrolled] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
 
-    const isLandingPage = location.pathname === '/';
+    const isLandingPage = pathname === '/';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -38,7 +41,7 @@ const Navbar = ({ openAuth }) => {
 
     const handleLogout = () => {
         logout();
-        navigate('/');
+        router.push('/');
     };
 
     const tabs = [
@@ -72,7 +75,7 @@ const Navbar = ({ openAuth }) => {
                     {/* Logo Branding */}
                     <div className="flex items-center">
                         <Link 
-                            to="/" 
+                            href="/" 
                             className="flex items-center gap-2 text-xl font-black text-indigo-600 dark:text-brand-400 tracking-tight"
                         >
                             <div className="w-8 h-8 bg-red-950/40 border border-red-500/20 rounded-lg flex items-center justify-center shadow-md">
@@ -131,16 +134,16 @@ const Navbar = ({ openAuth }) => {
                                     </span>
 
                                     {user.role === 'admin' && (
-                                        <Link to="/admin" className="flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 border border-amber-500/10 px-3 py-1 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/30 transition">
+                                        <Link href="/admin" className="flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 border border-amber-500/10 px-3 py-1 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/30 transition">
                                             <Shield className="h-4 w-4" /> Admin Panel
                                         </Link>
                                     )}
 
-                                    <Link to="/dashboard" className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-brand-400 transition">
+                                    <Link href="/dashboard" className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-brand-400 transition">
                                         Dashboard
                                     </Link>
 
-                                    <Link to="/user" className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-brand-400 transition">
+                                    <Link href="/user" className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-brand-400 transition">
                                         History
                                     </Link>
 
@@ -160,7 +163,7 @@ const Navbar = ({ openAuth }) => {
                         ) : (
                             <div className="flex items-center space-x-2">
                                 <Link
-                                    to="/login"
+                                    href="/login"
                                     className={`px-4 py-2 rounded-xl text-sm font-bold transition cursor-pointer inline-flex items-center justify-center ${
                                         isLandingPage && !isScrolled
                                             ? 'text-white hover:text-indigo-400'
@@ -170,7 +173,7 @@ const Navbar = ({ openAuth }) => {
                                     Login
                                 </Link>
                                 <Link
-                                    to="/signup"
+                                    href="/signup"
                                     className="bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-brand-500 dark:hover:bg-brand-600 dark:text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md shadow-indigo-600/10 dark:shadow-brand-500/10 transition cursor-pointer hover:scale-[1.02] active:scale-[0.98] inline-flex items-center justify-center"
                                 >
                                     Get Started

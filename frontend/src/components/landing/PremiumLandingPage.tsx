@@ -1521,9 +1521,15 @@ function FAQ() {
   );
 }
 
-export default function PremiumLandingPage() {
-  const [authOpen, setAuthOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+export default function PremiumLandingPage({
+  defaultAuthOpen = false,
+  defaultAuthMode = "login",
+}: {
+  defaultAuthOpen?: boolean;
+  defaultAuthMode?: "login" | "signup";
+} = {}) {
+  const [authOpen, setAuthOpen] = useState(defaultAuthOpen);
+  const [authMode, setAuthMode] = useState<"login" | "signup">(defaultAuthMode);
 
   const handleAuth = (mode: "login" | "signup") => {
     setAuthMode(mode);

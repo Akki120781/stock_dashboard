@@ -1,8 +1,10 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import TransactionTable from '../components/trading/TransactionTable';
 import { History, LayoutDashboard } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const UserPanelPage = () => {
     const [transactions, setTransactions] = useState([]);
@@ -41,7 +43,7 @@ const UserPanelPage = () => {
                             View your past orders and their status.
                         </p>
                     </div>
-                    <Link to="/dashboard" className="hidden sm:flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
+                    <Link href="/dashboard" className="hidden sm:flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                         <LayoutDashboard className="h-4 w-4 mr-1" /> Go to Dashboard
                     </Link>
                 </div>

@@ -1,5 +1,5 @@
-import AnimatedCharactersAuth from "@/components/ui/animated-characters-auth";
+import PremiumLandingPage from "@/components/landing/PremiumLandingPage";
 
 export default function Page() {
-  return <AnimatedCharactersAuth mode="login" />;
+  return <PremiumLandingPage defaultAuthOpen={true} defaultAuthMode="login" />;
 }

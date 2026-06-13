@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useContext } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import api from '../services/api';

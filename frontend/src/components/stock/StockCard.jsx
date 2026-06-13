@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { TrendingUp, TrendingDown, BookmarkPlus, BookmarkMinus } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -62,7 +64,7 @@ const StockCard = ({ stockData, isWatchlisted, onWatchlistChange }) => {
     }
 
     return (
-        <Link to={`/stock/${symbol}`} className="block group h-full">
+        <Link href={`/stock/${symbol}`} className="block group h-full">
             <div className="h-full bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-2xl p-6 border border-white/40 dark:border-slate-700/50 transition-all duration-300 relative z-10">
                 <div className="flex justify-between items-start mb-4">
                     <div>
