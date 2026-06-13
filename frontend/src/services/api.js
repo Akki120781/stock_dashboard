@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'https://stock-dashboard-509t.onrender.com/api',
+    baseURL: (typeof process !== 'undefined' && process.env?.VITE_API_URL) || 
+             (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || 
+             'https://stock-dashboard-509t.onrender.com/api',
 });
 
 // Add a request interceptor to attach the JWT token

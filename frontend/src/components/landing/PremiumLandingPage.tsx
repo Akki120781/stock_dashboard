@@ -1523,7 +1523,7 @@ export default function PremiumLandingPage() {
   const [authOpen, setAuthOpen] = useState(false);
 
   return (
-    <main className="relative min-h-screen bg-[#050812] text-white">
+    <main className="relative min-h-screen bg-[#050812] text-white isolate">
       {/* Scrollable content wrapper */}
       <div className="relative z-10 bg-[#050812] overflow-x-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] pb-12">
         <Navbar onAuth={() => setAuthOpen(true)} />

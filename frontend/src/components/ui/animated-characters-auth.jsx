@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,7 +172,7 @@ export default function AnimatedCharactersAuth({ mode = 'login' }) {
   const [isPurplePeeking, setIsPurplePeeking] = useState(false);
   
   const { login, signup } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const purpleRef = useRef(null);
   const blackRef = useRef(null);
@@ -292,7 +295,7 @@ export default function AnimatedCharactersAuth({ mode = 'login' }) {
       } else {
         await signup(username, email, password);
       }
-      navigate("/dashboard");
+      router.push("/dashboard");
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || "Authentication failed. Please verify your credentials.");
@@ -308,7 +311,7 @@ export default function AnimatedCharactersAuth({ mode = 'login' }) {
       <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-[#121829] via-[#090d16] to-[#020617] p-12 text-white border-r border-slate-800/60 overflow-hidden">
         
         <div className="relative z-20">
-          <Link to="/" className="flex items-center gap-2 text-xl font-black text-indigo-400 tracking-tight">
+          <Link href="/" className="flex items-center gap-2 text-xl font-black text-indigo-400 tracking-tight">
             <div className="w-8 h-8 bg-red-950/40 border border-red-500/20 rounded-lg flex items-center justify-center shadow-md">
               <BullLogo className="h-5.5 w-5.5" />
             </div>
@@ -642,14 +645,14 @@ export default function AnimatedCharactersAuth({ mode = 'login' }) {
             {mode === 'login' ? (
               <>
                 Don't have an account?{" "}
-                <Link to="/signup" className="text-indigo-400 font-semibold hover:underline">
+                <Link href="/signup" className="text-indigo-400 font-semibold hover:underline">
                   Sign Up
                 </Link>
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <Link to="/login" className="text-indigo-400 font-semibold hover:underline">
+                <Link href="/login" className="text-indigo-400 font-semibold hover:underline">
                   Log in
                 </Link>
               </>
