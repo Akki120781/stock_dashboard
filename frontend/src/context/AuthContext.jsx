@@ -2,6 +2,9 @@
 
 import React, { createContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
 export const AuthContext = createContext();
 
@@ -36,6 +39,15 @@ export const AuthProvider = ({ children }) => {
         return response.data;
     };
 
+    const googleLogin = async (accessToken) => {
+        const response = await api.post('/auth/google', { accessToken });
+        if (response.data) {
+            localStorage.setItem('user', JSON.stringify(response.data));
+            setUser(response.data);
+        }
+        return response.data;
+    };
+
     const logout = () => {
         localStorage.removeItem('user');
         setUser(null);
@@ -53,19 +65,22 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const providerValue = {
+        user,
+        loading,
+        login,
+        signup,
+        googleLogin,
+        logout,
+        fetchWatchlist,
+        watchlistCount: user?.watchlist?.length || 0,
+    };
+
     return (
-        <AuthContext.Provider
-            value={{
-                user,
-                loading,
-                login,
-                signup,
-                logout,
-                fetchWatchlist,
-                watchlistCount: user?.watchlist?.length || 0,
-            }}
-        >
-            {children}
-        </AuthContext.Provider>
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || 'dummy-client-id.apps.googleusercontent.com'}>
+            <AuthContext.Provider value={providerValue}>
+                {children}
+            </AuthContext.Provider>
+        </GoogleOAuthProvider>
     );
 };

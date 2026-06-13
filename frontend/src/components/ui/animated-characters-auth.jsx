@@ -11,6 +11,7 @@ import { Eye, EyeOff, Mail, Activity, Loader2, X } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { BullLogo } from "./bull-logo";
 import { cn } from "@/lib/utils";
+import { useGoogleLogin } from '@react-oauth/google';
 
 // --- Pupil Component ---
 const Pupil = ({ 
@@ -177,8 +178,32 @@ export default function AnimatedCharactersAuth({ mode: initialMode = 'login', is
   const [isLookingAtEachOther, setIsLookingAtEachOther] = useState(false);
   const [isPurplePeeking, setIsPurplePeeking] = useState(false);
   
-  const { login, signup } = useContext(AuthContext);
+  const { login, signup, googleLogin } = useContext(AuthContext);
   const router = useRouter();
+
+  const handleGoogleLoginSuccess = async (tokenResponse) => {
+    setError("");
+    setIsLoading(true);
+    try {
+      await googleLogin(tokenResponse.access_token);
+      router.push("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Google authentication failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLoginError = (errorResponse) => {
+    console.error(errorResponse);
+    setError("Google Sign-In failed. Please try again.");
+  };
+
+  const triggerGoogleLogin = useGoogleLogin({
+    onSuccess: handleGoogleLoginSuccess,
+    onError: handleGoogleLoginError,
+  });
 
   const purpleRef = useRef(null);
   const blackRef = useRef(null);
@@ -654,7 +679,13 @@ export default function AnimatedCharactersAuth({ mode: initialMode = 'login', is
               variant="outline" 
               className="w-full h-12 bg-white/5 border-slate-800 hover:bg-white/10 hover:border-slate-700 text-white rounded-2xl cursor-pointer"
               type="button"
-              onClick={() => alert("OAuth login is in demo mode. Please use email forms.")}
+              onClick={() => {
+                if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
+                  alert("Google Sign-In is not configured. Please set the NEXT_PUBLIC_GOOGLE_CLIENT_ID environment variable.");
+                } else {
+                  triggerGoogleLogin();
+                }
+              }}
             >
               {/* Google official logo SVG */}
               <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24">
