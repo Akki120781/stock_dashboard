@@ -1,0 +1,1 @@
+{\n  " version\: 2,\n \builds\: [\n {\n \src\: \frontend/next.config.mjs\,\n \use\: \@vercel/next\\n }\n ],\n \outputDirectory\: \frontend/.next\\n}
