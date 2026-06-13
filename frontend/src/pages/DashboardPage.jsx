@@ -30,7 +30,7 @@ import api from '../services/api';
 import StockCard from '../components/stock/StockCard';
 import { AuthContext } from '../context/AuthContext';
 
-// Default widgets layout configuration prioritized according to the new hierarchy
+// Default widgets layout configuration prioritized and perfectly grid balanced
 const DEFAULT_WIDGETS = [
   { id: 'market-overview', title: 'Market Indices', w: 'lg:col-span-2', isPinned: false, isHidden: false },
   { id: 'ai-insights', title: 'AI Analyst Intelligence', w: 'lg:col-span-1', isPinned: false, isHidden: false },
@@ -39,10 +39,17 @@ const DEFAULT_WIDGETS = [
   { id: 'top-movers', title: 'Top Market Movers', w: 'lg:col-span-1', isPinned: false, isHidden: false },
   { id: 'news-timeline', title: 'Live Briefings & News', w: 'lg:col-span-1', isPinned: false, isHidden: false },
   { id: 'market-heatmap', title: 'Sector Heatmap & Flow', w: 'lg:col-span-2', isPinned: false, isHidden: false },
+  { id: 'fear-greed', title: 'Fear & Greed Index', w: 'lg:col-span-1', isPinned: false, isHidden: false },
+  { id: 'economic-calendar', title: 'Economic Calendar', w: 'lg:col-span-1', isPinned: false, isHidden: false },
+  { id: 'earnings-calendar', title: 'Earnings Calendar', w: 'lg:col-span-1', isPinned: false, isHidden: false },
+  { id: 'options-activity', title: 'Options Flow & Activity', w: 'lg:col-span-1', isPinned: false, isHidden: false },
+  { id: 'insider-trading', title: 'Insider Transactions', w: 'lg:col-span-1', isPinned: false, isHidden: false },
+  { id: 'high-low-tracker', title: '52W High/Low Tracker', w: 'lg:col-span-1', isPinned: false, isHidden: false },
   { id: 'discovery-hub', title: 'Discovery Signals', w: 'lg:col-span-1', isPinned: false, isHidden: false },
   { id: 'investor-activity', title: 'Investor Feed Alerts', w: 'lg:col-span-1', isPinned: false, isHidden: false },
   { id: 'technical-signals', title: 'Technical Signals', w: 'lg:col-span-1', isPinned: false, isHidden: false },
-  { id: 'achievements-card', title: 'Investor Insights & Streaks', w: 'lg:col-span-1', isPinned: false, isHidden: false }
+  { id: 'achievements-card', title: 'Investor Insights & Streaks', w: 'lg:col-span-1', isPinned: false, isHidden: false },
+  { id: 'recent-transactions', title: 'Recent Simulated Transactions', w: 'lg:col-span-2', isPinned: false, isHidden: false }
 ];
 
 export default function DashboardPage() {
@@ -245,7 +252,7 @@ export default function DashboardPage() {
   return (
     <div className="w-full relative z-10 font-sans">
       
-      {/* Top Controller Toolbar - Tightened padding and margin. Slogans completely removed. */}
+      {/* Top Controller Toolbar */}
       <header className="mb-3 flex flex-row justify-end items-center gap-3 border-b border-white/5 pb-2">
         
         {hiddenWidgets.length > 0 && (
@@ -519,7 +526,7 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* 6. Market News Feed (timeline) - Enhanced, Scrollable, source/date, and impact tags */}
+                {/* 6. Market News Feed (timeline) */}
                 {widget.id === 'news-timeline' && (
                   <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
                     {[
@@ -599,11 +606,164 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* 8. Discovery Hub */}
+                {/* 8. Fear & Greed Index */}
+                {widget.id === 'fear-greed' && (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Current Market State</span>
+                      <span className="text-xs font-black text-emerald-400">78 // Extreme Greed</span>
+                    </div>
+                    {/* Speedometer Track */}
+                    <div className="w-full h-2 bg-slate-900 border border-white/5 rounded-full overflow-hidden relative">
+                      <div className="h-full bg-gradient-to-r from-rose-500 via-amber-500 to-emerald-500 rounded-full" style={{ width: '100%' }} />
+                      <div className="absolute top-0 bottom-0 w-1 bg-white border border-black shadow" style={{ left: '78%' }} />
+                    </div>
+                    {/* Historic index comparison */}
+                    <div className="grid grid-cols-3 gap-1 text-center text-[9px] text-slate-400 font-semibold mt-1">
+                      <div className="bg-[#090d16]/45 border border-white/5 p-1 rounded">
+                        <span className="block text-[8px] text-slate-500">Yesterday</span>
+                        <span className="font-bold text-emerald-500">74</span>
+                      </div>
+                      <div className="bg-[#090d16]/45 border border-white/5 p-1 rounded">
+                        <span className="block text-[8px] text-slate-500">Last Week</span>
+                        <span className="font-bold text-emerald-500">70</span>
+                      </div>
+                      <div className="bg-[#090d16]/45 border border-white/5 p-1 rounded">
+                        <span className="block text-[8px] text-slate-500">Last Month</span>
+                        <span className="font-bold text-amber-500">65</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 9. Economic Calendar */}
+                {widget.id === 'economic-calendar' && (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {[
+                      { event: "US CPI (YoY)", time: "June 12", exp: "3.1%", act: "3.0%", color: "text-emerald-400 border-emerald-500/25 bg-emerald-500/5", state: "Bullish" },
+                      { event: "Fed Rate Decision", time: "June 14", exp: "5.25%", act: "5.25%", color: "text-slate-400 border-white/10 bg-white/5", state: "Neutral" },
+                      { event: "Unemployment Rate", time: "June 15", exp: "3.9%", act: "4.0%", color: "text-rose-400 border-rose-500/25 bg-rose-500/5", state: "Bearish" }
+                    ].map((eco, idx) => (
+                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
+                        <div>
+                          <span className="text-[11px] font-bold text-slate-200 block">{eco.event}</span>
+                          <span className="text-[8px] text-slate-500 block uppercase font-bold">{eco.time}</span>
+                        </div>
+                        <div className="text-right flex items-center gap-2">
+                          <div className="text-[9px] text-slate-450 font-semibold leading-tight text-left">
+                            <span className="block text-[8px] text-slate-500">Exp: {eco.exp}</span>
+                            <span className="block text-[10px] text-slate-300">Act: {eco.act}</span>
+                          </div>
+                          <span className={`px-1.5 py-0.5 rounded border text-[8px] font-bold ${eco.color}`}>
+                            {eco.state}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 10. Earnings Calendar */}
+                {widget.id === 'earnings-calendar' && (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {[
+                      { ticker: "AAPL", date: "June 15", est: "$1.42", schedule: "After Close" },
+                      { ticker: "TSLA", date: "June 16", est: "$0.62", schedule: "After Close" },
+                      { ticker: "NVDA", date: "June 18", est: "$2.84", schedule: "Before Open" }
+                    ].map((earn, idx) => (
+                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
+                        <div>
+                          <span className="text-[11px] font-black text-white block uppercase">{earn.ticker}</span>
+                          <span className="text-[8px] text-slate-500 block uppercase font-bold">{earn.date}</span>
+                        </div>
+                        <div className="text-right leading-tight">
+                          <span className="text-[10px] font-bold text-slate-300 block">Est: {earn.est}</span>
+                          <span className="text-[8px] text-slate-500 font-semibold block">{earn.schedule}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 11. Options Flow & Activity */}
+                {widget.id === 'options-activity' && (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {[
+                      { contract: "NVDA $160 Call", exp: "June 26", vol: "24.5K (12x)", sentiment: "Bullish", up: true },
+                      { contract: "TSLA $180 Put", exp: "July 02", vol: "18.2K (8x)", sentiment: "Bearish", up: false },
+                      { contract: "AAPL $220 Call", exp: "June 19", vol: "15.1K (5x)", sentiment: "Bullish", up: true }
+                    ].map((opt, idx) => (
+                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
+                        <div>
+                          <span className="text-[11px] font-bold text-slate-200 block uppercase">{opt.contract}</span>
+                          <span className="text-[8px] text-slate-500 block uppercase font-bold">Exp: {opt.exp}</span>
+                        </div>
+                        <div className="text-right flex items-center gap-2">
+                          <div className="text-[9px] text-slate-405 font-semibold leading-tight text-left">
+                            <span className="block text-[8px] text-slate-500">Vol: {opt.vol}</span>
+                          </div>
+                          <span className={`px-1 py-0.5 rounded text-[8px] font-bold uppercase ${opt.up ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border border-rose-500/20'}`}>
+                            {opt.sentiment}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 12. Insider Transactions */}
+                {widget.id === 'insider-trading' && (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {[
+                      { ticker: "NVDA", name: "J. Cox (Director)", action: "SOLD", val: "$1.2M", up: false },
+                      { ticker: "AAPL", name: "L. Maestri (CFO)", action: "SOLD", val: "$820K", up: false },
+                      { ticker: "AMD", name: "L. Su (CEO)", action: "BOUGHT", val: "$2.4M", up: true }
+                    ].map((ins, idx) => (
+                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-black text-white uppercase">{ins.ticker}</span>
+                            <span className="text-[8px] text-slate-500 font-bold truncate max-w-[80px]">{ins.name}</span>
+                          </div>
+                          <span className={`text-[8px] font-bold uppercase ${ins.up ? 'text-emerald-400' : 'text-rose-400'}`}>{ins.action}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[11px] font-extrabold text-slate-200">{ins.val}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 13. 52W High/Low Tracker */}
+                {widget.id === 'high-low-tracker' && (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {[
+                      { ticker: "MSFT", type: "52W High", price: "$438.20", chg: "+2.1%", up: true },
+                      { ticker: "AMZN", type: "52W High", price: "$189.50", chg: "+1.8%", up: true },
+                      { ticker: "INTC", type: "52W Low", price: "$28.40", chg: "-3.4%", up: false }
+                    ].map((hl, idx) => (
+                      <div key={idx} className="flex justify-between items-center bg-white/[0.01] border border-white/5 rounded-lg p-2 hover:bg-white/[0.02]">
+                        <div>
+                          <span className="text-[11px] font-black text-white uppercase block">{hl.ticker}</span>
+                          <span className={`px-1 py-0.2 rounded border text-[7px] font-bold ${hl.up ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' : 'text-rose-400 border-rose-500/20 bg-rose-500/5'}`}>
+                            {hl.type}
+                          </span>
+                        </div>
+                        <div className="text-right leading-tight">
+                          <span className="text-[10px] font-bold text-slate-300 block">{hl.price}</span>
+                          <span className={`text-[9px] font-bold block ${hl.up ? 'text-emerald-400' : 'text-rose-400'}`}>{hl.chg}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 14. Discovery Hub */}
                 {widget.id === 'discovery-hub' && (
                   <div className="space-y-1.5">
                     {[
-                      { badge: "52W Breakout", details: "Amazon (AMZN) breached $188, hitting historical records.", c: "text-amber-400 border-amber-500/25 bg-amber-500/5" },
+                      { badge: "52W Breakout", details: "Amazon (AMZN) breached $189.50, hitting historical records.", c: "text-amber-400 border-amber-500/25 bg-amber-500/5" },
                       { badge: "Analyst Upgrade", details: "Microsoft (MSFT) rated Strong Buy by Goldman Sachs.", c: "text-cyan-400 border-cyan-500/25 bg-cyan-500/5" },
                       { badge: "Unusual Volume", details: "NVIDIA (NVDA) morning volume spikes 3.2x average.", c: "text-cyan-400 border-cyan-500/25 bg-cyan-500/5" }
                     ].map((disc, idx) => (
@@ -617,7 +777,7 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* 9. Investor Activity Feed */}
+                {/* 15. Investor Activity Feed */}
                 {widget.id === 'investor-activity' && (
                   <div className="space-y-1.5">
                     {[
@@ -633,7 +793,7 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* 10. Technical Signals */}
+                {/* 16. Technical Signals */}
                 {widget.id === 'technical-signals' && (
                   <div className="space-y-2.5">
                     <div className="grid grid-cols-3 gap-1 text-center text-[9px] font-bold">
@@ -676,7 +836,7 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* 11. Achievements & Streaks */}
+                {/* 17. Achievements & Streaks */}
                 {widget.id === 'achievements-card' && (
                   <div className="space-y-2">
                     <div className="flex justify-between items-center bg-[#090d16] border border-white/10 rounded-xl p-2.5">
@@ -713,6 +873,42 @@ export default function DashboardPage() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* 18. Recent Simulated Transactions */}
+                {widget.id === 'recent-transactions' && (
+                  <div className="w-full overflow-x-auto">
+                    <table className="w-full text-[10px] text-slate-350 border-collapse">
+                      <thead>
+                        <tr className="border-b border-white/10 text-slate-500 font-bold uppercase tracking-wider text-left">
+                          <th className="pb-1 font-bold">Ticker</th>
+                          <th className="pb-1 font-bold">Action</th>
+                          <th className="pb-1 font-bold">Price</th>
+                          <th className="pb-1 font-bold">Shares</th>
+                          <th className="pb-1 font-bold">Value</th>
+                          <th className="pb-1 font-bold">Date</th>
+                          <th className="pb-1 font-bold">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 font-semibold text-slate-300">
+                        {[
+                          { ticker: "NVDA", act: "BUY", price: "$145.20", shares: 10, val: "$1,452.00", date: "June 12", stat: "COMPLETED", up: true },
+                          { ticker: "AMD", act: "SELL", price: "$162.10", shares: 15, val: "$2,431.50", date: "June 10", stat: "COMPLETED", up: false },
+                          { ticker: "AAPL", act: "BUY", price: "$212.40", shares: 5, val: "$1,062.00", date: "June 08", stat: "COMPLETED", up: true }
+                        ].map((tx, idx) => (
+                          <tr key={idx} className="hover:bg-white/[0.01]">
+                            <td className="py-1 font-black uppercase text-white">{tx.ticker}</td>
+                            <td className={`py-1 ${tx.up ? 'text-emerald-400' : 'text-rose-400'}`}>{tx.act}</td>
+                            <td className="py-1 text-slate-300">{tx.price}</td>
+                            <td className="py-1 text-slate-350">{tx.shares}</td>
+                            <td className="py-1 text-slate-200 font-bold">{tx.val}</td>
+                            <td className="py-1 text-slate-400">{tx.date}</td>
+                            <td className="py-1 text-[8px]"><span className="px-1.5 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">COMPLETED</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
 
